@@ -1,1 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stock Sync – Smart Inhouse Grocery Inventory Management</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f3;
+    --bg-tertiary: #eeede9;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --border: rgba(0,0,0,0.12);
+    --border-md: rgba(0,0,0,0.2);
+    --green: #1D9E75;
+    --green-dark: #0F6E56;
+    --green-light: #EAF3DE;
+    --green-text: #3B6D11;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text-primary); background: var(--bg-tertiary); font-size: 16px; line-height: 1.7; }
+
+  /* NAV */
+  .nav { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 18px; font-weight: 500; display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text-primary); }
+  .logo-icon { width: 28px; height: 28px; background: var(--green); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; }
+  .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+  .nav-link { font-size: 14px; color: var(--text-secondary); cursor: pointer; background: none; border: none; font-family: inherit; }
+  .nav-link:hover { color: var(--text-primary); }
+  .btn-primary { background: var(--green); color: #fff; border: none; border-radius: var(--radius-md); padding: 8px 18px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  .btn-primary:hover { background: var(--green-dark); }
+  .btn-outline { background: var(--bg-primary); color: var(--text-primary); border: 0.5px solid var(--border-md); border-radius: var(--radius-md); padding: 8px 18px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  .btn-outline:hover { background: var(--bg-secondary); }
+
+  /* HERO */
+  .hero { padding: 5rem 2rem 4rem; text-align: center; background: var(--bg-primary); }
+  .hero-badge { display: inline-block; background: var(--green-light); color: var(--green-text); font-size: 12px; padding: 4px 14px; border-radius: 20px; margin-bottom: 1.5rem; font-weight: 500; }
+  .hero h1 { font-size: 42px; font-weight: 500; line-height: 1.2; margin-bottom: 1rem; max-width: 560px; margin-left: auto; margin-right: auto; }
+  .hero h1 span { color: var(--green); }
+  .hero p { font-size: 16px; color: var(--text-secondary); max-width: 480px; margin: 0 auto 2rem; line-height: 1.7; }
+  .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .hero-stats { display: flex; justify-content: center; gap: 3rem; margin-top: 3.5rem; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat-num { font-size: 24px; font-weight: 500; color: var(--green); }
+  .stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* SECTIONS */
+  .section { padding: 4rem 2rem; }
+  .section-inner { max-width: 900px; margin: 0 auto; }
+  .section-label { font-size: 12px; font-weight: 500; color: var(--green); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .5rem; }
+  .section-title { font-size: 28px; font-weight: 500; margin-bottom: .75rem; }
+  .section-sub { font-size: 15px; color: var(--text-secondary); line-height: 1.7; max-width: 560px; }
+
+  /* FEATURES */
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 2.5rem; }
+  .feature-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+  .feature-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 12px; }
+  .feature-card h3 { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+  .feature-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+  /* PERSONAS */
+  .personas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 2.5rem; }
+  .persona-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+  .persona-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; margin-bottom: 12px; }
+  .persona-card h3 { font-size: 14px; font-weight: 500; }
+  .persona-card .role { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+  .persona-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; margin: 2px 2px 0 0; }
+
+  /* APP SECTION */
+  .app-section { background: var(--bg-primary); padding: 4rem 2rem; }
+  .app-tabs { display: flex; gap: 8px; margin-bottom: 2rem; flex-wrap: wrap; }
+  .tab-btn { padding: 8px 16px; border-radius: var(--radius-md); border: 0.5px solid var(--border); background: var(--bg-secondary); color: var(--text-secondary); font-size: 13px; cursor: pointer; font-family: inherit; }
+  .tab-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+  /* INVENTORY */
+  .inventory-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .inventory-table th { text-align: left; padding: 8px 12px; color: var(--text-secondary); font-weight: 500; border-bottom: 0.5px solid var(--border); }
+  .inventory-table td { padding: 10px 12px; border-bottom: 0.5px solid var(--border); }
+  .status-badge { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 500; }
+  .status-fresh { background: #EAF3DE; color: #3B6D11; }
+  .status-expiring { background: #FAEEDA; color: #633806; }
+  .status-low { background: #FCEBEB; color: #501313; }
+
+  /* FORM */
+  .add-form { background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; }
+  .form-label { font-size: 13px; font-weight: 500; margin-bottom: 10px; }
+  .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .form-row input, .form-row select { flex: 1; min-width: 120px; padding: 8px 10px; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); font-size: 13px; background: var(--bg-primary); color: var(--text-primary); font-family: inherit; outline: none; }
+  .form-row input:focus, .form-row select:focus { border-color: var(--green); }
+
+  /* EXPENSES */
+  .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .summary-card { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 1rem; text-align: center; }
+  .summary-card .s-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+  .summary-card .s-val { font-size: 22px; font-weight: 500; color: var(--green); }
+  .expense-list { display: flex; flex-direction: column; gap: 10px; }
+  .expense-item { background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .expense-name { font-size: 14px; font-weight: 500; }
+  .expense-meta { font-size: 12px; color: var(--text-secondary); }
+  .expense-amount { font-size: 15px; font-weight: 500; color: var(--green); }
+
+  /* ALERTS */
+  .alert-list { display: flex; flex-direction: column; gap: 8px; }
+  .alert-item { border-radius: var(--radius-md); padding: 10px 14px; display: flex; gap: 10px; align-items: flex-start; }
+  .alert-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .alert-title { font-size: 13px; font-weight: 500; }
+  .alert-sub { font-size: 12px; color: var(--text-secondary); }
+
+  /* FOOTER */
+  footer { background: var(--bg-primary); border-top: 0.5px solid var(--border); padding: 2rem; text-align: center; }
+  footer p { font-size: 13px; color: var(--text-secondary); line-height: 1.8; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 28px; }
+    .hero-stats { gap: 1.5rem; }
+    .nav-links .btn-outline { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="nav">
+  <a class="logo" href="#">
+    <div class="logo-icon">SS</div>
+    Stock Sync
+  </a>
+  <div class="nav-links">
+    <button class="nav-link" onclick="scrollToSection('features')">Features</button>
+    <button class="nav-link" onclick="scrollToSection('personas')">Users</button>
+    <button class="nav-link" onclick="scrollToSection('app')">Try App</button>
+    <button class="btn-primary" onclick="scrollToSection('app')">Get started</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Smart Inhouse Grocery Inventory Management</div>
+  <h1>Stop wasting groceries.<br><span>Start syncing</span> your stock.</h1>
+  <p>Stock Sync helps households, shared flats, and families track groceries in real time — reduce waste, split expenses fairly, and never run out of essentials.</p>
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="scrollToSection('app')">Try the app ↓</button>
+    <button class="btn-outline" onclick="scrollToSection('features')">See features</button>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">3x</div><div class="stat-label">Less food wasted</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Expense transparency</div></div>
+    <div class="stat"><div class="stat-num">Real-time</div><div class="stat-label">Shared inventory</div></div>
+    <div class="stat"><div class="stat-num">All ages</div><div class="stat-label">Designed for everyone</div></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-inner">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Everything your household needs</h2>
+    <p class="section-sub">Built around real pain points discovered through user research with students, working professionals, and homemakers.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#EAF3DE">📦</div>
+        <h3>Shared inventory</h3>
+        <p>One centralized grocery list accessible by all household members with real-time updates.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#FAEEDA">🔔</div>
+        <h3>Expiry alerts</h3>
+        <p>Color-coded status: red = expiring, yellow = frequently bought, green = fresh. Never miss a spoil date.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#E6F1FB">💸</div>
+        <h3>Expense splitting</h3>
+        <p>Track who paid for what and split grocery costs fairly among all members automatically.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#EEEDFE">🛒</div>
+        <h3>Smart shopping list</h3>
+        <p>Auto-generated based on current stock and consumption patterns to avoid over-purchasing.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#FBEAF0">🏷️</div>
+        <h3>Categories & tags</h3>
+        <p>Organize items by vegetables, dairy, grains, snacks — with quantity and unit tracking.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#E1F5EE">📊</div>
+        <h3>Spending insights</h3>
+        <p>View daily, weekly, and monthly grocery spending summaries. Know where your money goes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USER PERSONAS -->
+<section class="section" id="personas" style="background: var(--bg-primary)">
+  <div class="section-inner">
+    <div class="section-label">Who it's for</div>
+    <h2 class="section-title">Designed for real users</h2>
+    <p class="section-sub">Three key personas shaped every feature decision in Stock Sync.</p>
+    <div class="personas-grid">
+      <div class="persona-card">
+        <div class="persona-avatar" style="background:#E6F1FB;color:#0C447C">RS</div>
+        <h3>Raj Sharma</h3>
+        <div class="role">Student, 20 · Shared flat</div>
+        <span class="persona-tag" style="background:#EAF3DE;color:#3B6D11">Easy tracking</span>
+        <span class="persona-tag" style="background:#E6F1FB;color:#0C447C">Expense split</span>
+        <span class="persona-tag" style="background:#FAEEDA;color:#633806">Simpler way</span>
+      </div>
+      <div class="persona-card">
+        <div class="persona-avatar" style="background:#EAF3DE;color:#3B6D11">GV</div>
+        <h3>Gaurav Verma</h3>
+        <div class="role">Software Dev, 27 · Shared apartment</div>
+        <span class="persona-tag" style="background:#EAF3DE;color:#3B6D11">Dashboard</span>
+        <span class="persona-tag" style="background:#E6F1FB;color:#0C447C">Quick access</span>
+        <span class="persona-tag" style="background:#FAEEDA;color:#633806">Efficiency</span>
+      </div>
+      <div class="persona-card">
+        <div class="persona-avatar" style="background:#FBEAF0;color:#72243E">PS</div>
+        <h3>Priya Singh</h3>
+        <div class="role">Homemaker, 36 · Family household</div>
+        <span class="persona-tag" style="background:#EAF3DE;color:#3B6D11">Organization</span>
+        <span class="persona-tag" style="background:#FBEAF0;color:#72243E">Reduce waste</span>
+        <span class="persona-tag" style="background:#FAEEDA;color:#633806">Simplicity</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APP PROTOTYPE -->
+<section class="app-section" id="app">
+  <div class="section-inner">
+    <div class="section-label">Live Demo</div>
+    <h2 class="section-title">Try Stock Sync</h2>
+    <p class="section-sub" style="margin-bottom:1.5rem">A working prototype — add items, track expenses, and see alerts.</p>
+
+    <div class="app-tabs">
+      <button class="tab-btn active" onclick="showTab('inventory', this)">Inventory</button>
+      <button class="tab-btn" onclick="showTab('expenses', this)">Expenses</button>
+      <button class="tab-btn" onclick="showTab('alerts', this)">Alerts</button>
+    </div>
+
+    <!-- INVENTORY TAB -->
+    <div id="tab-inventory">
+      <div class="add-form">
+        <div class="form-label">Add item</div>
+        <div class="form-row">
+          <input id="item-name" type="text" placeholder="Item name (e.g. Milk)" />
+          <input id="item-qty" type="number" placeholder="Qty" min="1" value="1" style="max-width:80px" />
+          <select id="item-cat">
+            <option>Dairy</option>
+            <option>Vegetables</option>
+            <option>Grains</option>
+            <option>Snacks</option>
+            <option>Other</option>
+          </select>
+          <select id="item-status">
+            <option value="fresh">Fresh</option>
+            <option value="expiring">Expiring soon</option>
+            <option value="low">Low stock</option>
+          </select>
+          <button class="btn-primary" onclick="addItem()">Add</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Qty</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="inventory-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EXPENSES TAB -->
+    <div id="tab-expenses" style="display:none">
+      <div class="summary-cards">
+        <div class="summary-card">
+          <div class="s-label">Total spent</div>
+          <div class="s-val" id="total-spent">₹0</div>
+        </div>
+        <div class="summary-card">
+          <div class="s-label">Per person</div>
+          <div class="s-val" id="per-person">₹0</div>
+        </div>
+        <div class="summary-card">
+          <div class="s-label">This week</div>
+          <div class="s-val">₹1,240</div>
+        </div>
+      </div>
+      <div class="add-form">
+        <div class="form-label">Log expense</div>
+        <div class="form-row">
+          <input id="exp-name" type="text" placeholder="Item / description" />
+          <input id="exp-amount" type="number" placeholder="Amount (₹)" min="1" />
+          <select id="exp-member">
+            <option>Raj</option>
+            <option>Gaurav</option>
+            <option>Priya</option>
+          </select>
+          <button class="btn-primary" onclick="addExpense()">Add</button>
+        </div>
+      </div>
+      <div class="expense-list" id="expense-list"></div>
+    </div>
+
+    <!-- ALERTS TAB -->
+    <div id="tab-alerts" style="display:none">
+      <div class="alert-list" id="alert-list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p><strong>Stock Sync</strong> — Smart Inhouse Grocery Inventory Management</p>
+  <p>Team 7 – Gigabytes &nbsp;·&nbsp; Gaurav Tripathi &nbsp;·&nbsp; Aditya Chetlangia &nbsp;·&nbsp; Saneha Shaw &nbsp;·&nbsp; Aditya Raj</p>
+  <p>Heritage Institute of Technology, Kolkata &nbsp;·&nbsp; 2026</p>
+</footer>
+
+<script>
+  function scrollToSection(id) {
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  }
+
+  /* ── INVENTORY ── */
+  let inventory = [
+    { id: 1, name: 'Milk',     qty: 2, cat: 'Dairy',      status: 'expiring' },
+    { id: 2, name: 'Rice',     qty: 5, cat: 'Grains',     status: 'fresh'    },
+    { id: 3, name: 'Tomatoes', qty: 1, cat: 'Vegetables', status: 'low'      },
+    { id: 4, name: 'Bread',    qty: 1, cat: 'Other',      status: 'fresh'    },
+  ];
+  let nextId = 5;
+
+  function renderInventory() {
+    const tbody = document.getElementById('inventory-body');
+    if (inventory.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#6b6b6b;padding:2rem">No items yet. Add one above.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = inventory.map(item => `
+      <tr>
+        <td style="font-weight:500">${item.name}</td>
+        <td>${item.qty}</td>
+        <td style="color:#6b6b6b;font-size:12px">${item.cat}</td>
+        <td>
+          <span class="status-badge status-${item.status}">
+            ${item.status === 'fresh' ? 'Fresh' : item.status === 'expiring' ? 'Expiring soon' : 'Low stock'}
+          </span>
+        </td>
+        <td>
+          <button onclick="removeItem(${item.id})"
+            style="background:none;border:none;color:#6b6b6b;cursor:pointer;font-size:13px;font-family:inherit">
+            Remove
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function addItem() {
+    const name   = document.getElementById('item-name').value.trim();
+    const qty    = parseInt(document.getElementById('item-qty').value) || 1;
+    const cat    = document.getElementById('item-cat').value;
+    const status = document.getElementById('item-status').value;
+    if (!name) { alert('Please enter an item name.'); return; }
+    inventory.push({ id: nextId++, name, qty, cat, status });
+    document.getElementById('item-name').value = '';
+    document.getElementById('item-qty').value  = '1';
+    renderInventory();
+    renderAlerts();
+  }
+
+  function removeItem(id) {
+    inventory = inventory.filter(i => i.id !== id);
+    renderInventory();
+    renderAlerts();
+  }
+
+  /* ── EXPENSES ── */
+  let expenses = [
+    { id: 1, name: 'Weekly groceries', amount: 840, member: 'Raj'    },
+    { id: 2, name: 'Milk & bread',     amount: 120, member: 'Gaurav' },
+  ];
+  let nextExpId = 3;
+  const members = ['Raj', 'Gaurav', 'Priya'];
+
+  function renderExpenses() {
+    const total = expenses.reduce((s, e) => s + e.amount, 0);
+    document.getElementById('total-spent').textContent = '₹' + total.toLocaleString('en-IN');
+    document.getElementById('per-person').textContent  = '₹' + Math.round(total / members.length).toLocaleString('en-IN');
+    const el = document.getElementById('expense-list');
+    if (expenses.length === 0) {
+      el.innerHTML = '<p style="color:#6b6b6b;font-size:14px">No expenses logged yet.</p>';
+      return;
+    }
+    el.innerHTML = expenses.map(e => `
+      <div class="expense-item">
+        <div>
+          <div class="expense-name">${e.name}</div>
+          <div class="expense-meta">Paid by ${e.member}</div>
+        </div>
+        <div class="expense-amount">₹${e.amount.toLocaleString('en-IN')}</div>
+      </div>
+    `).join('');
+  }
+
+  function addExpense() {
+    const name   = document.getElementById('exp-name').value.trim();
+    const amount = parseInt(document.getElementById('exp-amount').value) || 0;
+    const member = document.getElementById('exp-member').value;
+    if (!name || !amount) { alert('Please enter a description and amount.'); return; }
+    expenses.push({ id: nextExpId++, name, amount, member });
+    document.getElementById('exp-name').value   = '';
+    document.getElementById('exp-amount').value = '';
+    renderExpenses();
+  }
+
+  /* ── ALERTS ── */
+  function renderAlerts() {
+    const expiringItems = inventory.filter(i => i.status === 'expiring');
+    const lowItems      = inventory.filter(i => i.status === 'low');
+    const alerts = [
+      ...expiringItems.map(i => ({
+        title: `${i.name} is expiring soon`,
+        sub:   'Use it before it goes to waste.',
+        bg:    '#FAEEDA', dot: '#EF9F27', tc: '#633806'
+      })),
+      ...lowItems.map(i => ({
+        title: `${i.name} is running low`,
+        sub:   `Only ${i.qty} unit(s) left. Consider restocking.`,
+        bg:    '#FCEBEB', dot: '#E24B4A', tc: '#501313'
+      })),
+      { title: 'Shared dashboard active',       sub: 'All 3 members can view and update the inventory.',         bg: '#EAF3DE', dot: '#1D9E75', tc: '#3B6D11' },
+      { title: 'Monthly spending summary ready', sub: '₹1,960 spent this month across 3 members.',               bg: '#E6F1FB', dot: '#378ADD', tc: '#0C447C' },
+    ];
+    document.getElementById('alert-list').innerHTML = alerts.map(a => `
+      <div class="alert-item" style="background:${a.bg}">
+        <div class="alert-dot" style="background:${a.dot}"></div>
+        <div>
+          <div class="alert-title" style="color:${a.tc}">${a.title}</div>
+          <div class="alert-sub">${a.sub}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* ── TABS ── */
+  function showTab(tab, btn) {
+    ['inventory', 'expenses', 'alerts'].forEach(t => {
+      document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+    });
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (tab === 'expenses') renderExpenses();
+    if (tab === 'alerts')   renderAlerts();
+  }
+
+  /* ── INIT ── */
+  renderInventory();
+</script>
+</body>
+</html>
