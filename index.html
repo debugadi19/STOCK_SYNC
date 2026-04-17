@@ -259,6 +259,14 @@
             <option>Snacks</option>
             <option>Other</option>
           </select>
+         <select id="item-unit">
+            <option value="kg">kilograms</option>
+            <option value="g">grams</option>
+            <option value="l">litre</option>
+            <option value="ml">ml</option>
+            <option value="pack">packs</option>
+            <option value="pcs">pieces</option>
+          </select>
           <select id="item-status">
             <option value="fresh">Fresh</option>
             <option value="expiring">Expiring soon</option>
@@ -274,6 +282,7 @@
               <th>Item</th>
               <th>Qty</th>
               <th>Category</th>
+              <th>Unit</th>
               <th>Status</th>
               <th></th>
             </tr>
@@ -304,11 +313,12 @@
         <div class="form-row">
           <input id="exp-name" type="text" placeholder="Item / description" />
           <input id="exp-amount" type="number" placeholder="Amount (₹)" min="1" />
-          <select id="exp-member">
+          <!-- <select id="exp-member">
             <option>Raj</option>
             <option>Gaurav</option>
             <option>Priya</option>
           </select>
+         -->
           <button class="btn-primary" onclick="addExpense()">Add</button>
         </div>
       </div>
@@ -335,11 +345,11 @@
   }
 
   /* ── INVENTORY ── */
-  let inventory = [
-    { id: 1, name: 'Milk',     qty: 2, cat: 'Dairy',      status: 'expiring' },
-    { id: 2, name: 'Rice',     qty: 5, cat: 'Grains',     status: 'fresh'    },
-    { id: 3, name: 'Tomatoes', qty: 1, cat: 'Vegetables', status: 'low'      },
-    { id: 4, name: 'Bread',    qty: 1, cat: 'Other',      status: 'fresh'    },
+ let inventory = [
+    { id: 1, name: 'Milk',     qty: 2,    unit:'pack',   cat: 'Dairy',      status: 'expiring' },
+    { id: 2, name: 'Rice',     qty: 5,    unit:'kg',     cat: 'Grains',     status: 'fresh'    },
+    { id: 3, name: 'Tomatoes', qty: 500,  unit:'g',      cat: 'Vegetables', status: 'low'      },
+    { id: 4, name: 'Bread',    qty: 1,    unit:'pack',   cat: 'Other',      status: 'fresh'    },
   ];
   let nextId = 5;
 
@@ -353,7 +363,7 @@
       <tr>
         <td style="font-weight:500">${item.name}</td>
         <td>${item.qty}</td>
-        <td style="color:#6b6b6b;font-size:12px">${item.cat}</td>
+        <td style="color:#6b6b6b;font-size:12px">${item.cat}</td><td>${item.unit}</td>
         <td>
           <span class="status-badge status-${item.status}">
             ${item.status === 'fresh' ? 'Fresh' : item.status === 'expiring' ? 'Expiring soon' : 'Low stock'}
@@ -372,10 +382,11 @@
   function addItem() {
     const name   = document.getElementById('item-name').value.trim();
     const qty    = parseInt(document.getElementById('item-qty').value) || 1;
+    const unit   = document.getElementById('item-unit').value;
     const cat    = document.getElementById('item-cat').value;
     const status = document.getElementById('item-status').value;
     if (!name) { alert('Please enter an item name.'); return; }
-    inventory.push({ id: nextId++, name, qty, cat, status });
+    inventory.push({ id: nextId++, name, qty, unit, cat, status });
     document.getElementById('item-name').value = '';
     document.getElementById('item-qty').value  = '1';
     renderInventory();
@@ -394,12 +405,11 @@
     { id: 2, name: 'Milk & bread',     amount: 120, member: 'Gaurav' },
   ];
   let nextExpId = 3;
-  const members = ['Raj', 'Gaurav', 'Priya'];
 
   function renderExpenses() {
     const total = expenses.reduce((s, e) => s + e.amount, 0);
     document.getElementById('total-spent').textContent = '₹' + total.toLocaleString('en-IN');
-    document.getElementById('per-person').textContent  = '₹' + Math.round(total / members.length).toLocaleString('en-IN');
+    document.getElementById('per-person').textContent  = '₹' + Math.round(total / (nextExpId-1)).toLocaleString('en-IN');
     const el = document.getElementById('expense-list');
     if (expenses.length === 0) {
       el.innerHTML = '<p style="color:#6b6b6b;font-size:14px">No expenses logged yet.</p>';
@@ -412,6 +422,10 @@
           <div class="expense-meta">Paid by ${e.member}</div>
         </div>
         <div class="expense-amount">₹${e.amount.toLocaleString('en-IN')}</div>
+        <button onclick="removeItem2(${e.id})"
+            style="background:none;border:none;color:#6b6b6b;cursor:pointer;font-size:13px;font-family:inherit">
+            Remove
+          </button>
       </div>
     `).join('');
   }
@@ -424,7 +438,15 @@
     expenses.push({ id: nextExpId++, name, amount, member });
     document.getElementById('exp-name').value   = '';
     document.getElementById('exp-amount').value = '';
+    document.getElementById('exp-member').value = '';
     renderExpenses();
+  }
+
+ function removeItem2(id) {
+    expenses= expenses.filter(i => i.id !== id);
+    nextExpId--;
+    renderExpenses();
+    renderAlerts();
   }
 
   /* ── ALERTS ── */
