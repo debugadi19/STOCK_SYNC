@@ -85,33 +85,70 @@
 <div class="login-box">
   <div class="logo">Stock Sync 🔐</div>
 
-  <input type="text" id="name" placeholder="Enter your name">
+  <input type="text" id="name" placeholder="Enter your email">
   <input type="password" id="password" placeholder="Enter password">
 
   <button onclick="login()">Login</button>
+  <button onclick="signup()">Create Account</button>
 
   <div class="error" id="error">Invalid name or password</div>
 </div>
+<script type="module">
 
-<script>
-  function login() {
-    const name = document.getElementById("name").value;
-    const password = document.getElementById("password").value;
-
-    // Dummy credentials (you can change these)
-    const validName = "Aditya";
-    const validPassword = "1234";
-
-    if (name === validName && password === validPassword) {
-      alert("Login Successful!");
-      
-      // Redirect to your main page
-      window.location.href = "index.html"; 
-    } else {
-      document.getElementById("error").style.display = "block";
-    }
-  }
-</script>
-
+    // 🔥 Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    
+    // 🔥 Your Config (already correct)
+    const firebaseConfig = {
+      apiKey: "AIzaSyA4q6xdvReoswKx5c6dqQbFYgm2NUoceks",
+      authDomain: "stock-sync-23cc9.firebaseapp.com",
+      projectId: "stock-sync-23cc9",
+      storageBucket: "stock-sync-23cc9.firebasestorage.app",
+      messagingSenderId: "952662923282",
+      appId: "1:952662923282:web:13d91673ecb8ca0cf520cb"
+    };
+    
+    // 🔥 Initialize
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    
+    console.log("Firebase Connected ✅");
+    
+    // ✅ SIGNUP FUNCTION
+    window.signup = function () {
+      const email = document.getElementById("name").value;
+      const password = document.getElementById("password").value;
+    
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          alert("Account Created ✅");
+          console.log(userCredential.user);
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    };
+    
+    // ✅ LOGIN FUNCTION
+    window.login = function () {
+      const email = document.getElementById("name").value;
+      const password = document.getElementById("password").value;
+    
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          alert("Login Successful ✅");
+          window.location.href = "index.html";
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    };
+    
+    </script>
 </body>
 </html>
