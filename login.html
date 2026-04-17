@@ -121,18 +121,20 @@
     
     // ✅ SIGNUP FUNCTION
     window.signup = function () {
-      const email = document.getElementById("name").value;
-      const password = document.getElementById("password").value;
-    
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          alert("Account Created ✅");
-          console.log(userCredential.user);
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
-    };
+  const email = document.getElementById("name").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      alert("Account Created ✅");
+
+      // 🔥 REDIRECT AFTER SIGNUP
+      window.location.href = "index.html";
+    })
+    .catch((error) => {
+      alert(error.message);
+    });
+};
     
     // ✅ LOGIN FUNCTION
     window.login = function () {
