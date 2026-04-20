@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock Sync – Login</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="login-body">
+
+<div class="login-box">
+
+  <div class="login-logo">
+    <div class="logo-icon">SS</div>
+    Stock Sync
+  </div>
+  <div class="login-tagline">Your household's grocery command centre</div>
+
+  <div class="login-tabs">
+    <button class="login-tab active" id="tab-login-btn" onclick="switchTab('login')">Login</button>
+    <button class="login-tab" id="tab-signup-btn" onclick="switchTab('signup')">Sign up</button>
+  </div>
+
+  <div id="login-form">
+    <div class="login-field">
+      <label>Email address</label>
+      <input type="email" id="login-email" placeholder="you@example.com" />
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="Your password" />
+    </div>
+    <button class="login-btn" onclick="doLogin()">Login →</button>
+  </div>
+
+  <div id="signup-form" style="display:none">
+    <div class="login-field">
+      <label>Email address</label>
+      <input type="email" id="signup-email" placeholder="you@example.com" />
+    </div>
+    <div class="login-field">
+      <label>Password <span style="color:var(--text-tertiary);font-weight:400">(min. 6 characters)</span></label>
+      <input type="password" id="signup-pass" placeholder="Choose a password" />
+    </div>
+    <button class="login-btn" onclick="doSignup()">Create account →</button>
+  </div>
+
+  <div class="login-error" id="login-error"></div>
+
+  <p style="text-align:center;margin-top:1.25rem;font-size:12px;color:var(--text-tertiary)">
+    By continuing, you agree to Stock Sync's terms of use.
+  </p>
+</div>
+
+<script type="module">
+  import { login, signup } from './auth.js';
+
+  window.switchTab = function(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('login-form').style.display  = isLogin ? 'block' : 'none';
+    document.getElementById('signup-form').style.display = isLogin ? 'none'  : 'block';
+    document.getElementById('tab-login-btn').classList.toggle('active', isLogin);
+    document.getElementById('tab-signup-btn').classList.toggle('active', !isLogin);
+    document.getElementById('login-error').style.display = 'none';
+  };
+
+  window.showError = function(msg) {
+    const el = document.getElementById('login-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  };
+
+  window.doLogin = async function() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass  = document.getElementById('login-pass').value.trim();
+    if (!email || !pass) return showError('Please fill in all fields.');
+
+    // override the auth.js functions to show inline errors instead of alerts
+    try { await login(email, pass); }
+    catch(e) { showError(friendlyError(e.message)); }
+  };
+
+  window.doSignup = async function() {
+    const email = document.getElementById('signup-email').value.trim();
+    const pass  = document.getElementById('signup-pass').value.trim();
+    if (!email || !pass) return showError('Please fill in all fields.');
+    if (pass.length < 6) return showError('Password must be at least 6 characters.');
+
+    try { await signup(email, pass); }
+    catch(e) { showError(friendlyError(e.message)); }
+  };
+
+  function friendlyError(msg) {
+    if (msg.includes('user-not-found') || msg.includes('wrong-password') || msg.includes('invalid-credential'))
+      return 'Incorrect email or password.';
+    if (msg.includes('email-already-in-use'))
+      return 'An account with this email already exists.';
+    if (msg.includes('invalid-email'))
+      return 'Please enter a valid email address.';
+    if (msg.includes('weak-password'))
+      return 'Password is too weak. Use at least 6 characters.';
+    return 'Something went wrong. Please try again.';
+  }
+</script>
+
+</body>
+</html>
