@@ -3,154 +3,187 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login - Stock Sync</title>
-
+<title>Stock Sync – Login</title>
+<link rel="stylesheet" href="style.css">
 <style>
-  :root {
-    --green: #1D9E75;
-    --green-dark: #0F6E56;
-    --bg: #f5f5f3;
-    --white: #ffffff;
-    --text: #1a1a1a;
-    --border: rgba(0,0,0,0.15);
+  /* ── decorative background orbs ── */
+  .login-body::before,
+  .login-body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
   }
+  .login-body::before {
+    width: 500px; height: 500px;
+    top: -120px; left: -120px;
+    background: radial-gradient(circle, rgba(24,160,110,0.12), transparent 65%);
+  }
+  .login-body::after {
+    width: 400px; height: 400px;
+    bottom: -80px; right: -80px;
+    background: radial-gradient(circle, rgba(245,158,11,0.08), transparent 65%);
+  }
+  .login-box { position: relative; z-index: 1; }
 
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  /* ── loading spinner ── */
+  .btn-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
   }
+  .btn-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 16px; height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  .login-box {
-    background: var(--white);
-    padding: 2rem;
-    border-radius: 12px;
-    width: 320px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    text-align: center;
+  /* ── password toggle ── */
+  .input-wrap { position: relative; }
+  .input-wrap input { padding-right: 40px; }
+  .pw-toggle {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; font-size: 16px;
+    color: var(--text-tertiary); padding: 0; line-height: 1;
+    transition: color 0.15s;
   }
-
-  .logo {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: var(--green);
-  }
-
-  input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    font-size: 14px;
-  }
-
-  input:focus {
-    outline: none;
-    border-color: var(--green);
-  }
-
-  button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 15px;
-    background: var(--green);
-    border: none;
-    color: white;
-    border-radius: 8px;
-    font-size: 15px;
-    cursor: pointer;
-  }
-
-  button:hover {
-    background: var(--green-dark);
-  }
-
-  .error {
-    color: red;
-    font-size: 13px;
-    margin-top: 8px;
-    display: none;
-  }
+  .pw-toggle:hover { color: var(--text-secondary); }
 </style>
 </head>
-
-<body>
+<body class="login-body">
 
 <div class="login-box">
-  <div class="logo">Stock Sync 🔐</div>
 
-  <input type="text" id="name" placeholder="Enter your email">
-  <input type="password" id="password" placeholder="Enter password">
+  <div class="login-logo">
+    <div class="logo-icon">SS</div>
+    Stock Sync
+  </div>
+  <div class="login-tagline">Your household's grocery command centre</div>
 
-  <button onclick="login()">Login</button>
-  <button onclick="signup()">Create Account</button>
+  <div class="login-tabs">
+    <button class="login-tab active" id="tab-login-btn"  onclick="switchTab('login')">Login</button>
+    <button class="login-tab"        id="tab-signup-btn" onclick="switchTab('signup')">Sign up</button>
+  </div>
 
-  <div class="error" id="error">Invalid name or password</div>
+  <!-- LOGIN FORM -->
+  <div id="login-form">
+    <div class="login-field">
+      <label>Email address</label>
+      <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" />
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <div class="input-wrap">
+        <input type="password" id="login-pass" placeholder="Your password" autocomplete="current-password" />
+        <button class="pw-toggle" onclick="togglePw('login-pass', this)" type="button">👁</button>
+      </div>
+    </div>
+    <button class="login-btn" id="login-submit" onclick="doLogin()">Login →</button>
+  </div>
+
+  <!-- SIGNUP FORM -->
+  <div id="signup-form" style="display:none">
+    <div class="login-field">
+      <label>Email address</label>
+      <input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email" />
+    </div>
+    <div class="login-field">
+      <label>Password <span style="color:var(--text-tertiary);font-weight:400">(min. 6 characters)</span></label>
+      <div class="input-wrap">
+        <input type="password" id="signup-pass" placeholder="Choose a password" autocomplete="new-password" />
+        <button class="pw-toggle" onclick="togglePw('signup-pass', this)" type="button">👁</button>
+      </div>
+    </div>
+    <button class="login-btn" id="signup-submit" onclick="doSignup()">Create account →</button>
+  </div>
+
+  <div class="login-error" id="login-error"></div>
+
+  <p style="text-align:center;margin-top:1.5rem;font-size:12px;color:var(--text-tertiary)">
+    By continuing, you agree to Stock Sync's terms of use.
+  </p>
 </div>
+
 <script type="module">
+  import { login, signup } from './auth.js';
 
-    // 🔥 Import Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { 
-      getAuth, 
-      createUserWithEmailAndPassword,
-      signInWithEmailAndPassword 
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    
-    // 🔥 Your Config (already correct)
-    const firebaseConfig = {
-      apiKey: "AIzaSyA4q6xdvReoswKx5c6dqQbFYgm2NUoceks",
-      authDomain: "stock-sync-23cc9.firebaseapp.com",
-      projectId: "stock-sync-23cc9",
-      storageBucket: "stock-sync-23cc9.firebasestorage.app",
-      messagingSenderId: "952662923282",
-      appId: "1:952662923282:web:13d91673ecb8ca0cf520cb"
-    };
-    
-    // 🔥 Initialize
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    
-    console.log("Firebase Connected ✅");
-    
-    // ✅ SIGNUP FUNCTION
-    window.signup = function () {
-  const email = document.getElementById("name").value.trim();
-  const password = document.getElementById("password").value.trim();
+  window.switchTab = function(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('login-form').style.display  = isLogin ? 'block' : 'none';
+    document.getElementById('signup-form').style.display = isLogin ? 'none'  : 'block';
+    document.getElementById('tab-login-btn').classList.toggle('active',  isLogin);
+    document.getElementById('tab-signup-btn').classList.toggle('active', !isLogin);
+    document.getElementById('login-error').style.display = 'none';
+  };
 
-  createUserWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      alert("Account Created ✅");
+  window.showError = function(msg) {
+    const el = document.getElementById('login-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+    el.animate([{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],
+      {duration:200, iterations:2});
+  };
 
-      // 🔥 REDIRECT   AFTER SIGNUP
-      window.location.href = "index.html";
-    })
-    .catch((error) => {
-      alert(error.message);
-    });
-};
-    
-    // ✅ LOGIN FUNCTION
-    window.login = function () {
-      const email = document.getElementById("name").value;
-      const password = document.getElementById("password").value;
-    
-      signInWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          alert("Login   Successful ✅");
-          window.location.href = "index.html";
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
-    };
-    
-    </script>
+  window.togglePw = function(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    btn.textContent = show ? '🙈' : '👁';
+  };
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    if (loading) btn.classList.add('btn-loading');
+    else btn.classList.remove('btn-loading');
+  }
+
+  window.doLogin = async function() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass  = document.getElementById('login-pass').value.trim();
+    if (!email || !pass) return showError('Please fill in all fields.');
+    setLoading('login-submit', true);
+    try { await login(email, pass); }
+    catch(e) { showError(friendlyError(e.message)); setLoading('login-submit', false); }
+  };
+
+  window.doSignup = async function() {
+    const email = document.getElementById('signup-email').value.trim();
+    const pass  = document.getElementById('signup-pass').value.trim();
+    if (!email || !pass) return showError('Please fill in all fields.');
+    if (pass.length < 6) return showError('Password must be at least 6 characters.');
+    setLoading('signup-submit', true);
+    try { await signup(email, pass); }
+    catch(e) { showError(friendlyError(e.message)); setLoading('signup-submit', false); }
+  };
+
+  function friendlyError(msg) {
+    if (msg.includes('user-not-found') || msg.includes('wrong-password') || msg.includes('invalid-credential'))
+      return 'Incorrect email or password.';
+    if (msg.includes('email-already-in-use'))
+      return 'An account with this email already exists.';
+    if (msg.includes('invalid-email'))
+      return 'Please enter a valid email address.';
+    if (msg.includes('weak-password'))
+      return 'Password is too weak. Use at least 6 characters.';
+    return 'Something went wrong. Please try again.';
+  }
+
+  // ── Allow Enter key to submit ──
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const loginVisible = document.getElementById('login-form').style.display !== 'none';
+    if (loginVisible) window.doLogin();
+    else              window.doSignup();
+  });
+</script>
+
 </body>
 </html>
