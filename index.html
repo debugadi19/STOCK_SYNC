@@ -67,7 +67,6 @@
   .form-row input, .form-row select { flex: 1; min-width: 110px; padding: 8px 10px; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); font-size: 13px; background: var(--bg-primary); color: var(--text-primary); font-family: inherit; outline: none; }
   .form-row input:focus, .form-row select:focus { border-color: var(--green); }
 
-  /* INLINE EDIT ROW */
   .edit-row td { background: #f0faf5; }
   .inline-input { width: 100%; padding: 5px 7px; border: 0.5px solid var(--green); border-radius: 6px; font-size: 12px; font-family: inherit; background: #fff; color: var(--text-primary); outline: none; }
   .inline-select { width: 100%; padding: 5px 4px; border: 0.5px solid var(--green); border-radius: 6px; font-size: 12px; font-family: inherit; background: #fff; color: var(--text-primary); outline: none; }
@@ -94,12 +93,51 @@
   .alert-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
   .alert-title { font-size: 13px; font-weight: 500; }
   .alert-sub { font-size: 12px; color: var(--text-secondary); }
+
+  /* ── CHART STYLES ── */
+  .chart-section { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-top: 1.5rem; }
+  .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 8px; }
+  .chart-title { font-size: 14px; font-weight: 500; }
+  .chart-toggle { display: flex; gap: 6px; }
+  .chart-toggle-btn { padding: 5px 12px; border-radius: 6px; border: 0.5px solid var(--border-md); background: var(--bg-secondary); color: var(--text-secondary); font-size: 12px; cursor: pointer; font-family: inherit; }
+  .chart-toggle-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+  .chart-container { position: relative; }
+
+  /* Bar chart */
+  .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 180px; padding: 0 4px; }
+  .bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 6px; min-width: 40px; }
+  .bar-wrap { width: 100%; display: flex; align-items: flex-end; justify-content: center; height: 150px; }
+  .bar { width: 70%; border-radius: 4px 4px 0 0; transition: opacity 0.15s; cursor: default; position: relative; min-height: 4px; }
+  .bar:hover { opacity: 0.8; }
+  .bar-label { font-size: 11px; color: var(--text-secondary); text-align: center; white-space: nowrap; }
+  .bar-amount { font-size: 11px; font-weight: 500; color: var(--text-primary); text-align: center; }
+  .bar-tooltip { display: none; position: absolute; top: -34px; left: 50%; transform: translateX(-50%); background: var(--text-primary); color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 5px; white-space: nowrap; pointer-events: none; z-index: 10; }
+  .bar:hover .bar-tooltip { display: block; }
+  .bar-y-labels { position: absolute; left: 0; top: 0; height: 150px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+  .bar-y-labels span { font-size: 10px; color: var(--text-secondary); }
+  .bar-grid { position: absolute; left: 0; right: 0; top: 0; height: 150px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+  .bar-grid-line { border-top: 0.5px dashed var(--border); width: 100%; }
+
+  /* Pie chart */
+  .pie-chart-wrap { display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
+  .pie-svg-wrap { flex-shrink: 0; }
+  .pie-legend { display: flex; flex-direction: column; gap: 8px; }
+  .pie-legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .pie-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .pie-legend-label { color: var(--text-secondary); }
+  .pie-legend-amount { font-weight: 500; margin-left: auto; padding-left: 12px; }
+  .pie-legend-pct { font-size: 11px; color: var(--text-secondary); }
+
+  /* No data */
+  .chart-empty { text-align: center; color: var(--text-secondary); font-size: 13px; padding: 2rem 0; }
+
   footer { background: var(--bg-primary); border-top: 0.5px solid var(--border); padding: 2rem; text-align: center; }
   footer p { font-size: 13px; color: var(--text-secondary); line-height: 1.8; }
   @media (max-width: 600px) {
     .hero h1 { font-size: 28px; }
     .hero-stats { gap: 1.5rem; }
     .nav-links .btn-outline { display: none; }
+    .bar-chart { gap: 5px; }
   }
 </style>
 </head>
@@ -241,10 +279,29 @@
         <div class="form-row">
           <input id="exp-name" type="text" placeholder="Item / description" />
           <input id="exp-amount" type="number" placeholder="Amount (₹)" min="1" />
+          <select id="exp-cat">
+            <option value="Dairy">Dairy</option>
+            <option value="Vegetables">Vegetables</option>
+            <option value="Grains">Grains</option>
+            <option value="Snacks">Snacks</option>
+            <option value="Other">Other</option>
+          </select>
           <button class="btn-primary" onclick="addExpense()">Add</button>
         </div>
       </div>
       <div class="expense-list" id="expense-list"></div>
+
+      <!-- CATEGORY CHART -->
+      <div class="chart-section">
+        <div class="chart-header">
+          <div class="chart-title">Spending by Category</div>
+          <div class="chart-toggle">
+            <button class="chart-toggle-btn active" id="btn-bar" onclick="switchChart('bar')">Bar</button>
+            <button class="chart-toggle-btn" id="btn-pie" onclick="switchChart('pie')">Pie</button>
+          </div>
+        </div>
+        <div class="chart-container" id="chart-container"></div>
+      </div>
     </div>
 
     <!-- ALERTS TAB -->
@@ -384,30 +441,165 @@
 
   /* ── EXPENSES ── */
   let expenses = [
-    { id: 1, name: 'Weekly groceries', amount: 840, member: 'Raj'    },
-    { id: 2, name: 'Milk & bread',     amount: 120, member: 'Gaurav' },
+    { id: 1, name: 'Weekly groceries', amount: 840, member: 'Raj',    cat: 'Grains'     },
+    { id: 2, name: 'Milk & bread',     amount: 120, member: 'Gaurav', cat: 'Dairy'      },
+    { id: 3, name: 'Tomatoes & onions',amount: 200, member: 'Raj',    cat: 'Vegetables' },
+    { id: 4, name: 'Chips & biscuits', amount: 180, member: 'You',    cat: 'Snacks'     },
   ];
-  let nextExpId = 3;
+  let nextExpId = 5;
+  let currentChart = 'bar';
+
+  /* Category color palette — consistent with app theme */
+  const CAT_COLORS = {
+    'Dairy':      '#378ADD',
+    'Vegetables': '#1D9E75',
+    'Grains':     '#EF9F27',
+    'Snacks':     '#C95CB4',
+    'Other':      '#7B8FA1',
+  };
+
+  function getCategoryTotals() {
+    const totals = {};
+    expenses.forEach(e => {
+      const c = e.cat || 'Other';
+      totals[c] = (totals[c] || 0) + e.amount;
+    });
+    return totals;
+  }
+
+  function renderBarChart(totals) {
+    const entries = Object.entries(totals);
+    if (entries.length === 0) {
+      return `<div class="chart-empty">No expenses logged yet. Add an expense above to see the chart.</div>`;
+    }
+    const max = Math.max(...entries.map(([,v]) => v));
+    const step = Math.ceil(max / 4 / 50) * 50 || 100;
+    const yMax = step * 4;
+
+    const gridLines = [1, 0.75, 0.5, 0.25, 0].map(f =>
+      `<div class="bar-grid-line" style="opacity:${f===0?0:1}"></div>`
+    ).join('');
+
+    const bars = entries.map(([cat, amt]) => {
+      const pct = (amt / yMax) * 100;
+      const color = CAT_COLORS[cat] || '#7B8FA1';
+      return `
+        <div class="bar-group">
+          <div class="bar-wrap">
+            <div class="bar" style="height:${Math.max(pct,2)}%;background:${color}">
+              <div class="bar-tooltip">₹${amt.toLocaleString('en-IN')}</div>
+            </div>
+          </div>
+          <div class="bar-label">${cat}</div>
+          <div class="bar-amount" style="color:${color}">₹${amt >= 1000 ? (amt/1000).toFixed(1)+'k' : amt}</div>
+        </div>`;
+    }).join('');
+
+    const yLabels = [yMax, yMax*0.75, yMax*0.5, yMax*0.25, 0].map(v =>
+      `<span>₹${v >= 1000 ? (v/1000).toFixed(0)+'k' : v}</span>`
+    ).join('');
+
+    return `
+      <div style="position:relative;padding-left:36px">
+        <div class="bar-y-labels">${yLabels}</div>
+        <div style="position:relative">
+          <div class="bar-grid">${gridLines}</div>
+          <div class="bar-chart">${bars}</div>
+        </div>
+      </div>`;
+  }
+
+  function renderPieChart(totals) {
+    const entries = Object.entries(totals);
+    if (entries.length === 0) {
+      return `<div class="chart-empty">No expenses logged yet. Add an expense above to see the chart.</div>`;
+    }
+    const total = entries.reduce((s, [,v]) => s + v, 0);
+    const size = 160;
+    const cx = size / 2, cy = size / 2, r = size / 2 - 8;
+
+    let startAngle = -Math.PI / 2;
+    const slices = entries.map(([cat, amt]) => {
+      const angle = (amt / total) * 2 * Math.PI;
+      const endAngle = startAngle + angle;
+      const x1 = cx + r * Math.cos(startAngle);
+      const y1 = cy + r * Math.sin(startAngle);
+      const x2 = cx + r * Math.cos(endAngle);
+      const y2 = cy + r * Math.sin(endAngle);
+      const largeArc = angle > Math.PI ? 1 : 0;
+      const path = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z`;
+      const color = CAT_COLORS[cat] || '#7B8FA1';
+      const pct = Math.round((amt / total) * 100);
+      const result = { cat, amt, color, path, pct };
+      startAngle = endAngle;
+      return result;
+    });
+
+    const svgSlices = slices.map(s =>
+      `<path d="${s.path}" fill="${s.color}" stroke="#fff" stroke-width="2">
+        <title>${s.cat}: ₹${s.amt.toLocaleString('en-IN')} (${s.pct}%)</title>
+      </path>`
+    ).join('');
+
+    const legend = slices.map(s => `
+      <div class="pie-legend-item">
+        <div class="pie-legend-dot" style="background:${s.color}"></div>
+        <span class="pie-legend-label">${s.cat}</span>
+        <span class="pie-legend-amount">₹${s.amt.toLocaleString('en-IN')}</span>
+        <span class="pie-legend-pct">${s.pct}%</span>
+      </div>`).join('');
+
+    return `
+      <div class="pie-chart-wrap">
+        <div class="pie-svg-wrap">
+          <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${svgSlices}</svg>
+        </div>
+        <div class="pie-legend">${legend}</div>
+      </div>`;
+  }
+
+  function renderChart() {
+    const totals = getCategoryTotals();
+    const container = document.getElementById('chart-container');
+    if (!container) return;
+    container.innerHTML = currentChart === 'bar' ? renderBarChart(totals) : renderPieChart(totals);
+  }
+
+  function switchChart(type) {
+    currentChart = type;
+    document.getElementById('btn-bar').classList.toggle('active', type === 'bar');
+    document.getElementById('btn-pie').classList.toggle('active', type === 'pie');
+    renderChart();
+  }
 
   function renderExpenses() {
     const total = expenses.reduce((s, e) => s + e.amount, 0);
     document.getElementById('total-spent').textContent = '₹' + total.toLocaleString('en-IN');
     document.getElementById('per-person').textContent  = '₹' + Math.round(total / Math.max(nextExpId - 1, 1)).toLocaleString('en-IN');
     const el = document.getElementById('expense-list');
-    if (expenses.length === 0) { el.innerHTML = '<p style="color:#6b6b6b;font-size:14px">No expenses logged yet.</p>'; return; }
-    el.innerHTML = expenses.map(e => `
-      <div class="expense-item">
-        <div><div class="expense-name">${e.name}</div><div class="expense-meta">Paid by ${e.member}</div></div>
-        <div class="expense-amount">₹${e.amount.toLocaleString('en-IN')}</div>
-        <button onclick="removeExpense(${e.id})" style="background:none;border:none;color:#6b6b6b;cursor:pointer;font-size:13px;font-family:inherit">Remove</button>
-      </div>`).join('');
+    if (expenses.length === 0) { el.innerHTML = '<p style="color:#6b6b6b;font-size:14px">No expenses logged yet.</p>'; }
+    else {
+      el.innerHTML = expenses.map(e => `
+        <div class="expense-item">
+          <div>
+            <div class="expense-name">${e.name}</div>
+            <div class="expense-meta">Paid by ${e.member} &nbsp;·&nbsp;
+              <span style="display:inline-block;padding:1px 7px;border-radius:4px;font-size:11px;background:${CAT_COLORS[e.cat] || '#ccc'}22;color:${CAT_COLORS[e.cat] || '#555'};font-weight:500">${e.cat}</span>
+            </div>
+          </div>
+          <div class="expense-amount">₹${e.amount.toLocaleString('en-IN')}</div>
+          <button onclick="removeExpense(${e.id})" style="background:none;border:none;color:#6b6b6b;cursor:pointer;font-size:13px;font-family:inherit">Remove</button>
+        </div>`).join('');
+    }
+    renderChart();
   }
 
   function addExpense() {
     const name   = document.getElementById('exp-name').value.trim();
     const amount = parseInt(document.getElementById('exp-amount').value) || 0;
+    const cat    = document.getElementById('exp-cat').value;
     if (!name || !amount) { alert('Please enter a description and amount.'); return; }
-    expenses.push({ id: nextExpId++, name, amount, member: 'You' });
+    expenses.push({ id: nextExpId++, name, amount, member: 'You', cat });
     document.getElementById('exp-name').value   = '';
     document.getElementById('exp-amount').value = '';
     renderExpenses();
