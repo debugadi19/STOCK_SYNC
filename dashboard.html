@@ -52,8 +52,6 @@
     border-radius: var(--radius-md); padding: 10px 14px; margin-top: 10px; font-size: 13px;
   }
   .backup-row span { color: var(--text-secondary); flex: 1; }
-
-  /* Loading overlay shown while Firestore data is being fetched */
   .loading-overlay {
     position: fixed; inset: 0;
     background: rgba(255,255,255,0.85);
@@ -74,7 +72,6 @@
 </head>
 <body class="dash-body">
 
-<!-- Loading overlay — shown until Firestore data loads -->
 <div class="loading-overlay" id="loading-overlay">
   <div class="spinner"></div>
   <span>Loading your data…</span>
@@ -239,67 +236,74 @@
 </main>
 
 <script type="module">
-  import { logout }                                          from './auth.js';
-  import { getInventory, saveInventory,
-           getExpenses,  saveExpenses,
-           clearAll,     getStorageUsedKB }                  from './data.js';
-  import { validateItem, validateExpense }                   from './validate.js';
+  import { logout }                                           from './auth.js';
+  import { saveInventory, saveExpenses, clearAll,
+           getStorageUsedKB,
+           subscribeInventory, subscribeExpenses }            from './data.js';
+  import { validateItem, validateExpense }                    from './validate.js';
   import { searchItems,      getByCategory,
            getLowStock,      getExpiringSoon,   getFreshItems,
            sortByName,       sortByQty,         sortByDateAdded,
            getInventorySummary, getMemberBreakdown,
-           getTotalSpent,    getRecentExpenses }              from './filter.js';
-  import { exportBackup, importBackup }                      from './backup.js';
+           getTotalSpent,    getRecentExpenses }               from './filter.js';
+  import { exportBackup, importBackup }                       from './backup.js';
 
-  // ── AUTH GUARD ─────────────────────────────
+  // ── AUTH GUARD ──────────────────────────────
   const user = localStorage.getItem("user");
   const uid  = localStorage.getItem("uid");
   if (!user || !uid) { window.location.href = "login.html"; }
 
   document.getElementById('dash-user-label').textContent = user;
-  document.getElementById('user-initial').textContent    = (user||'?')[0].toUpperCase();
+  document.getElementById('user-initial').textContent    = (user || '?')[0].toUpperCase();
 
   const h = new Date().getHours();
   document.getElementById('dash-greeting').textContent =
     h < 12 ? 'Good morning 👋' : h < 17 ? 'Good afternoon 👋' : 'Good evening 👋';
 
-  // ── STATE ──────────────────────────────────
+  // ── STATE ───────────────────────────────────
   let inventory = [];
   let expenses  = [];
   let nextId    = 1;
   let nextExpId = 1;
 
-  // ── INIT — load data from Firestore ────────
-  // This runs once when the page loads.
-  // We fetch both inventory and expenses together using
-  // Promise.all (runs both fetches at the same time, faster).
-  async function init() {
-    try {
-      [inventory, expenses] = await Promise.all([
-        getInventory(),   // reads from Firestore
-        getExpenses()     // reads from Firestore
-      ]);
+  // Track whether each collection has loaded at least once
+  let invLoaded = false;
+  let expLoaded = false;
 
-      nextId    = inventory.length ? Math.max(...inventory.map(i=>i.id))+1 : 1;
-      nextExpId = expenses.length  ? Math.max(...expenses.map(e=>e.id))+1  : 1;
-
-      applyFilters();
-      updateStats();
-      updateStorageBar();
-    } catch(e) {
-      showToast("Could not load data. Check your connection.", "error");
-    } finally {
-      // Hide the loading spinner regardless of success or error
+  function hideLoadingWhenReady() {
+    if (invLoaded && expLoaded) {
       document.getElementById('loading-overlay').style.display = 'none';
+      document.getElementById('storage-bar').textContent = 'Storage: ' + getStorageUsedKB();
     }
   }
 
-  function updateStorageBar() {
-    document.getElementById('storage-bar').textContent =
-      `Storage: ${getStorageUsedKB()}`;
-  }
+  // ── REAL-TIME LISTENERS ─────────────────────
+  // subscribeInventory fires immediately with current data,
+  // then fires again whenever any device changes the data.
+  // This is what makes sync actually work.
 
-  // ── INVENTORY — ADD ────────────────────────
+  subscribeInventory(items => {
+    inventory = items;
+    nextId    = items.length ? Math.max(...items.map(i => i.id)) + 1 : 1;
+    invLoaded = true;
+
+    applyFilters();   // re-render the table
+    renderAlerts();
+    updateStats();
+    hideLoadingWhenReady();
+  });
+
+  subscribeExpenses(items => {
+    expenses  = items;
+    nextExpId = items.length ? Math.max(...items.map(e => e.id)) + 1 : 1;
+    expLoaded = true;
+
+    renderExpenses(); // re-render expenses
+    updateStats();
+    hideLoadingWhenReady();
+  });
+
+  // ── ADD ITEM ────────────────────────────────
   window.addItem = async function () {
     const name   = document.getElementById('item-name').value.trim();
     const qty    = document.getElementById('item-qty').value;
@@ -310,86 +314,100 @@
     const check = validateItem(name, qty, inventory);
     if (!check.ok) return showToast(check.message, "error");
 
-    inventory.push({ id:nextId++, name, qty:parseFloat(qty), cat, unit, status, addedAt:Date.now() });
+    const newItem = { id: nextId++, name, qty: parseFloat(qty), cat, unit, status, addedAt: Date.now() };
+    inventory.push(newItem);
 
     try {
-      await saveInventory(inventory);   // ← saves to Firestore
-      applyFilters(); renderAlerts(); updateStats();
-      document.getElementById('item-name').value='';
-      document.getElementById('item-qty').value='1';
+      await saveInventory(inventory);
+      // No need to re-render here — the onSnapshot listener above
+      // will fire automatically and re-render with the new data.
+      document.getElementById('item-name').value = '';
+      document.getElementById('item-qty').value  = '1';
       showToast(`Added "${name}" ✓`);
     } catch(e) {
+      // Roll back the optimistic push if save failed
+      inventory.pop();
       showToast("Save failed. Check your connection.", "error");
     }
   };
 
   window.removeItem = async function (id) {
-    const item = inventory.find(i=>i.id===id);
-    inventory  = inventory.filter(i=>i.id!==id);
+    const item    = inventory.find(i => i.id === id);
+    const prev    = inventory;
+    inventory     = inventory.filter(i => i.id !== id);
     try {
-      await saveInventory(inventory);   // ← saves to Firestore
-      applyFilters(); renderAlerts(); updateStats();
-      showToast(`Removed "${item?.name||'item'}"`, "warn");
+      await saveInventory(inventory);
+      showToast(`Removed "${item?.name || 'item'}"`, "warn");
     } catch(e) {
+      inventory = prev;
       showToast("Remove failed. Check your connection.", "error");
     }
   };
 
   window.updateStatus = async function (id, val) {
-    inventory = inventory.map(i => i.id===id ? {...i, status:val} : i);
+    const prev = inventory;
+    inventory  = inventory.map(i => i.id === id ? { ...i, status: val } : i);
     try {
-      await saveInventory(inventory);   // ← saves to Firestore
-      applyFilters(); renderAlerts(); updateStats();
+      await saveInventory(inventory);
     } catch(e) {
+      inventory = prev;
       showToast("Update failed.", "error");
     }
   };
 
-  // ── INVENTORY — FILTER & RENDER ────────────
+  // ── FILTER & RENDER INVENTORY ───────────────
   window.applyFilters = function () {
-    const query    = document.getElementById('search-input').value;
-    const catF     = document.getElementById('filter-cat').value;
-    const statusF  = document.getElementById('filter-status').value;
-    const sortMode = document.getElementById('sort-by').value;
+    // Guard: if DOM elements don't exist yet, bail out silently
+    const searchEl  = document.getElementById('search-input');
+    const catEl     = document.getElementById('filter-cat');
+    const statusEl  = document.getElementById('filter-status');
+    const sortEl    = document.getElementById('sort-by');
+    if (!searchEl) return;
+
+    const query    = searchEl.value;
+    const catF     = catEl.value;
+    const statusF  = statusEl.value;
+    const sortMode = sortEl.value;
 
     let result = [...inventory];
     result = searchItems(result, query);
-    if (catF)                 result = getByCategory(result, catF);
-    if (statusF==='expiring') result = getExpiringSoon(result);
-    else if (statusF==='low') result = getLowStock(result);
-    else if (statusF==='fresh') result = getFreshItems(result);
-    if (sortMode==='name')    result = sortByName(result);
-    else if (sortMode==='qty') result = sortByQty(result);
-    else                      result = sortByDateAdded(result);
+    if (catF)               result = getByCategory(result, catF);
+    if (statusF === 'expiring') result = getExpiringSoon(result);
+    else if (statusF === 'low') result = getLowStock(result);
+    else if (statusF === 'fresh') result = getFreshItems(result);
+    if (sortMode === 'name')    result = sortByName(result);
+    else if (sortMode === 'qty') result = sortByQty(result);
+    else                        result = sortByDateAdded(result);
+
     renderInventory(result);
   };
 
   function renderInventory(items) {
     const el = document.getElementById('inventory-body');
     if (!el) return;
-    if (!items||!items.length) {
-      el.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📦</div>No items found.</div></td></tr>`;
+    if (!items || !items.length) {
+      el.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📦</div>No items found.</div></td></tr>`;
       return;
     }
-    el.innerHTML = items.map(i=>`
+    el.innerHTML = items.map(i => `
       <tr>
         <td style="font-weight:600">${esc(i.name)}</td>
         <td style="color:var(--text-secondary)">${i.qty} ${i.unit}</td>
         <td><span style="font-size:11.5px;font-weight:600;background:var(--bg-secondary);padding:3px 8px;border-radius:5px;color:var(--text-secondary)">${i.cat}</span></td>
         <td style="color:var(--text-tertiary);font-size:12.5px">${i.unit}</td>
         <td>
-          <select onchange="updateStatus(${i.id},this.value)"
+          <select onchange="updateStatus(${i.id}, this.value)"
             style="border:none;background:transparent;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;outline:none;padding:2px 4px;">
-            <option value="fresh"    ${i.status==='fresh'   ?'selected':''}>🟢 Fresh</option>
-            <option value="expiring" ${i.status==='expiring'?'selected':''}>🟡 Expiring</option>
-            <option value="low"      ${i.status==='low'     ?'selected':''}>🔴 Low Stock</option>
+            <option value="fresh"    ${i.status === 'fresh'    ? 'selected' : ''}>🟢 Fresh</option>
+            <option value="expiring" ${i.status === 'expiring' ? 'selected' : ''}>🟡 Expiring</option>
+            <option value="low"      ${i.status === 'low'      ? 'selected' : ''}>🔴 Low Stock</option>
           </select>
         </td>
         <td><button class="btn-danger" onclick="removeItem(${i.id})">Remove</button></td>
       </tr>`).join('');
   }
 
-  // ── EXPENSES ───────────────────────────────
+  // ── EXPENSES ────────────────────────────────
   window.addExpense = async function () {
     const name   = document.getElementById('exp-name').value.trim();
     const amount = document.getElementById('exp-amount').value;
@@ -398,25 +416,26 @@
     const check = validateExpense(name, amount);
     if (!check.ok) return showToast(check.message, "error");
 
-    expenses.push({ id:nextExpId++, name, amount:parseFloat(amount), member, date:Date.now() });
+    expenses.push({ id: nextExpId++, name, amount: parseFloat(amount), member, date: Date.now() });
     try {
-      await saveExpenses(expenses);     // ← saves to Firestore
-      renderExpenses(); updateStats();
-      document.getElementById('exp-name').value='';
-      document.getElementById('exp-amount').value='';
+      await saveExpenses(expenses);
+      document.getElementById('exp-name').value   = '';
+      document.getElementById('exp-amount').value = '';
       showToast(`Logged ₹${amount} for "${name}" ✓`);
     } catch(e) {
+      expenses.pop();
       showToast("Save failed. Check your connection.", "error");
     }
   };
 
   window.removeExpense = async function (id) {
-    expenses = expenses.filter(e=>e.id!==id);
+    const prev = expenses;
+    expenses   = expenses.filter(e => e.id !== id);
     try {
-      await saveExpenses(expenses);     // ← saves to Firestore
-      renderExpenses(); updateStats();
-      showToast("Expense removed","warn");
+      await saveExpenses(expenses);
+      showToast("Expense removed", "warn");
     } catch(e) {
+      expenses = prev;
       showToast("Remove failed.", "error");
     }
   };
@@ -424,21 +443,22 @@
   function renderExpenses() {
     const el = document.getElementById('expense-list');
     if (!el) return;
+
     const total     = getTotalSpent(expenses);
-    const members   = [...new Set(expenses.map(e=>e.member))].length||1;
-    const weekTotal = getTotalSpent(getRecentExpenses(expenses,7));
+    const members   = [...new Set(expenses.map(e => e.member))].length || 1;
+    const weekTotal = getTotalSpent(getRecentExpenses(expenses, 7));
     const breakdown = getMemberBreakdown(expenses);
 
-    document.getElementById('total-spent').textContent='₹'+total.toLocaleString('en-IN');
-    document.getElementById('per-person').textContent ='₹'+Math.round(total/members).toLocaleString('en-IN');
-    document.getElementById('this-week').textContent  ='₹'+weekTotal.toLocaleString('en-IN');
+    document.getElementById('total-spent').textContent = '₹' + total.toLocaleString('en-IN');
+    document.getElementById('per-person').textContent  = '₹' + Math.round(total / members).toLocaleString('en-IN');
+    document.getElementById('this-week').textContent   = '₹' + weekTotal.toLocaleString('en-IN');
 
-    const bEl=document.getElementById('member-breakdown');
+    const bEl = document.getElementById('member-breakdown');
     if (bEl) {
-      const entries=Object.entries(breakdown);
-      bEl.innerHTML=!entries.length
-        ?'<span style="color:var(--text-tertiary)">No expenses yet.</span>'
-        :entries.map(([m,amt])=>`
+      const entries = Object.entries(breakdown);
+      bEl.innerHTML = !entries.length
+        ? '<span style="color:var(--text-tertiary)">No expenses yet.</span>'
+        : entries.map(([m, amt]) => `
           <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;">
             <div style="display:flex;align-items:center;gap:8px;">
               <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">${m[0]}</div>
@@ -447,9 +467,10 @@
             <span style="font-weight:700;color:var(--green)">₹${amt.toLocaleString('en-IN')}</span>
           </div>`).join('');
     }
-    el.innerHTML=!expenses.length
-      ?`<div class="empty-state"><div class="empty-icon">💸</div>No expenses logged yet.</div>`
-      :[...expenses].reverse().map(e=>`
+
+    el.innerHTML = !expenses.length
+      ? `<div class="empty-state"><div class="empty-icon">💸</div>No expenses logged yet.</div>`
+      : [...expenses].reverse().map(e => `
         <div class="expense-item">
           <div class="expense-left">
             <div class="expense-name">${esc(e.name)}</div>
@@ -462,109 +483,116 @@
         </div>`).join('');
   }
 
-  // ── ALERTS ─────────────────────────────────
+  // ── ALERTS ──────────────────────────────────
   function renderAlerts() {
-    const el=document.getElementById('alert-list');
+    const el = document.getElementById('alert-list');
     if (!el) return;
-    const alerts=[
-      ...getExpiringSoon(inventory).map(i=>({type:'red',  title:`⚠️ ${i.name} is expiring soon`,sub:`${i.qty} ${i.unit} · ${i.cat}`})),
-      ...getLowStock(inventory).map(i=>    ({type:'amber',title:`📉 ${i.name} is running low`,  sub:`Only ${i.qty} ${i.unit} remaining`})),
-      ...getFreshItems(inventory).map(i=>  ({type:'green',title:`✓ ${i.name} is fully stocked`, sub:`${i.qty} ${i.unit} · ${i.cat}`})),
+    const alerts = [
+      ...getExpiringSoon(inventory).map(i => ({ type:'red',   title:`⚠️ ${i.name} is expiring soon`, sub:`${i.qty} ${i.unit} · ${i.cat}` })),
+      ...getLowStock(inventory).map(i =>     ({ type:'amber', title:`📉 ${i.name} is running low`,    sub:`Only ${i.qty} ${i.unit} remaining` })),
+      ...getFreshItems(inventory).map(i =>   ({ type:'green', title:`✓ ${i.name} is fully stocked`,  sub:`${i.qty} ${i.unit} · ${i.cat}` })),
     ];
-    el.innerHTML=!alerts.length
-      ?`<div class="empty-state"><div class="empty-icon">✅</div>No alerts — inventory looks great!</div>`
-      :alerts.map(a=>`
+    el.innerHTML = !alerts.length
+      ? `<div class="empty-state"><div class="empty-icon">✅</div>No alerts — inventory looks great!</div>`
+      : alerts.map(a => `
         <div class="alert-item alert-${a.type}">
           <div class="alert-dot alert-dot-${a.type}"></div>
           <div><div class="alert-title">${a.title}</div><div class="alert-sub">${a.sub}</div></div>
         </div>`).join('');
   }
 
-  // ── STATS ──────────────────────────────────
+  // ── STATS ───────────────────────────────────
   function updateStats() {
-    const s=getInventorySummary(inventory);
+    const s = getInventorySummary(inventory);
     document.getElementById('stat-total').textContent    = s.total;
     document.getElementById('stat-expiring').textContent = s.expiring;
     document.getElementById('stat-low').textContent      = s.low;
-    document.getElementById('stat-spend').textContent    = '₹'+getTotalSpent(expenses).toLocaleString('en-IN');
+    document.getElementById('stat-spend').textContent    = '₹' + getTotalSpent(expenses).toLocaleString('en-IN');
   }
 
-  // ── TABS ───────────────────────────────────
-  window.showTab = function(tab,btn) {
-    ['inventory','expenses','alerts'].forEach(t=>
-      document.getElementById('tab-'+t).style.display = t===tab?'block':'none');
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  // ── TABS ────────────────────────────────────
+  window.showTab = function (tab, btn) {
+    ['inventory','expenses','alerts'].forEach(t =>
+      document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-    if (tab==='alerts')   renderAlerts();
-    if (tab==='expenses') renderExpenses();
+    if (tab === 'alerts')   renderAlerts();
+    if (tab === 'expenses') renderExpenses();
   };
 
-  // ── CSV ────────────────────────────────────
+  // ── CSV ─────────────────────────────────────
   window.downloadCSV = function () {
-    if (!inventory.length) return showToast("No items to export","warn");
-    const csv=[['Name','Quantity','Unit','Category','Status','Added On'],
-      ...inventory.map(i=>[i.name,i.qty,i.unit,i.cat,i.status,fmtDate(i.addedAt)])
-    ].map(r=>r.join(',')).join('\n');
-    Object.assign(document.createElement('a'),{
-      href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),
-      download:'stock-sync-inventory.csv'
+    if (!inventory.length) return showToast("No items to export", "warn");
+    const csv = [
+      ['Name','Quantity','Unit','Category','Status','Added On'],
+      ...inventory.map(i => [i.name, i.qty, i.unit, i.cat, i.status, fmtDate(i.addedAt)])
+    ].map(r => r.join(',')).join('\n');
+    Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(new Blob([csv], { type:'text/csv' })),
+      download: 'stock-sync-inventory.csv'
     }).click();
     showToast("CSV downloaded ✓");
   };
 
-  // ── BACKUP ─────────────────────────────────
-  window.doExportBackup = function() {
-    const r=exportBackup(); showToast(r.message);
+  // ── BACKUP ──────────────────────────────────
+  window.doExportBackup = function () {
+    const r = exportBackup();
+    showToast(r.message);
   };
 
-  window.doImportBackup = async function(event) {
-    const file=event.target.files[0];
+  window.doImportBackup = async function (event) {
+    const file = event.target.files[0];
     if (!file) return;
     try {
       const r = await importBackup(file);
-      // After import, re-save everything to Firestore
-      await Promise.all([
-        saveInventory(r.inventory),
-        saveExpenses(r.expenses)
-      ]);
-      inventory=r.inventory; expenses=r.expenses;
-      applyFilters(); renderExpenses(); renderAlerts(); updateStats();
+      await Promise.all([saveInventory(r.inventory), saveExpenses(r.expenses)]);
       showToast(r.message);
-    } catch(err) { showToast(String(err),"error"); }
-    event.target.value='';
+    } catch(err) {
+      showToast(String(err), "error");
+    }
+    event.target.value = '';
   };
 
-  // ── CLEAR ──────────────────────────────────
-  window.clearAllData = async function() {
+  // ── CLEAR ───────────────────────────────────
+  window.clearAllData = async function () {
     if (!confirm("Reset all your data? This cannot be undone.")) return;
     try {
-      await clearAll();     // ← deletes from Firestore
-      inventory=[]; expenses=[]; nextId=1; nextExpId=1;
-      applyFilters(); renderExpenses(); renderAlerts(); updateStats();
-      showToast("All data cleared","warn");
+      await clearAll();
+      showToast("All data cleared", "warn");
     } catch(e) {
       showToast("Clear failed. Check your connection.", "error");
     }
   };
 
-  window.doLogout = async function() { await logout(); };
+  // ── LOGOUT ──────────────────────────────────
+  window.doLogout = async function () { await logout(); };
 
-  // ── TOAST ──────────────────────────────────
-  function showToast(msg,type='success') {
-    let c=document.getElementById('_tc');
-    if (!c){c=document.createElement('div');c.id='_tc';c.style.cssText='position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;';document.body.appendChild(c);}
-    const col={success:{bg:'#ecfdf5',border:'#86efac',text:'#065f46'},error:{bg:'#fef2f2',border:'#fca5a5',text:'#7f1d1d'},warn:{bg:'#fffbeb',border:'#fcd34d',text:'#78350f'}}[type]||{bg:'#ecfdf5',border:'#86efac',text:'#065f46'};
-    const t=document.createElement('div');
-    t.style.cssText=`background:${col.bg};border:1px solid ${col.border};color:${col.text};padding:11px 18px;border-radius:12px;font-size:13.5px;font-weight:600;font-family:'DM Sans',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.12);max-width:290px;`;
-    t.textContent=msg; c.appendChild(t);
-    setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300);},2800);
+  // ── TOAST ───────────────────────────────────
+  function showToast(msg, type = 'success') {
+    let c = document.getElementById('_tc');
+    if (!c) {
+      c = document.createElement('div');
+      c.id = '_tc';
+      c.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;';
+      document.body.appendChild(c);
+    }
+    const col = {
+      success: { bg:'#ecfdf5', border:'#86efac', text:'#065f46' },
+      error:   { bg:'#fef2f2', border:'#fca5a5', text:'#7f1d1d' },
+      warn:    { bg:'#fffbeb', border:'#fcd34d', text:'#78350f' }
+    }[type] || { bg:'#ecfdf5', border:'#86efac', text:'#065f46' };
+
+    const t = document.createElement('div');
+    t.style.cssText = `background:${col.bg};border:1px solid ${col.border};color:${col.text};padding:11px 18px;border-radius:12px;font-size:13.5px;font-weight:600;font-family:'DM Sans',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.12);max-width:290px;`;
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 2800);
   }
 
-  function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
-  function fmtDate(ts){return ts?new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):''}
-
-  // ── KICK OFF ───────────────────────────────
-  init(); // load data from Firestore when page opens
+  // ── HELPERS ─────────────────────────────────
+  function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+  function fmtDate(ts) { return ts ? new Date(ts).toLocaleDateString('en-IN', { day:'numeric', month:'short' }) : ''; }
 </script>
+
 </body>
 </html>
