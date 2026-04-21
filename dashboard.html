@@ -52,9 +52,33 @@
     border-radius: var(--radius-md); padding: 10px 14px; margin-top: 10px; font-size: 13px;
   }
   .backup-row span { color: var(--text-secondary); flex: 1; }
+
+  /* Loading overlay shown while Firestore data is being fetched */
+  .loading-overlay {
+    position: fixed; inset: 0;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(6px);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 9999; gap: 14px;
+    font-size: 14px; color: var(--text-secondary); font-weight: 500;
+  }
+  .spinner {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 3px solid var(--green-light);
+    border-top-color: var(--green);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body class="dash-body">
+
+<!-- Loading overlay — shown until Firestore data loads -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <span>Loading your data…</span>
+</div>
 
 <nav class="dash-nav">
   <a class="logo" href="index.html">
@@ -147,7 +171,7 @@
         <button class="btn-outline" style="font-size:12px;padding:5px 12px;" onclick="document.getElementById('backup-file-input').click()">Import JSON</button>
         <input type="file" id="backup-file-input" accept=".json" onchange="doImportBackup(event)" />
       </div>
-      <div class="storage-bar" id="storage-bar">Storage used: —</div>
+      <div class="storage-bar" id="storage-bar">Storage: —</div>
     </div>
 
     <div class="filter-bar">
@@ -227,9 +251,11 @@
            getTotalSpent,    getRecentExpenses }              from './filter.js';
   import { exportBackup, importBackup }                      from './backup.js';
 
-  // auth guard
+  // ── AUTH GUARD ─────────────────────────────
   const user = localStorage.getItem("user");
-  if (!user) { window.location.href = "login.html"; }
+  const uid  = localStorage.getItem("uid");
+  if (!user || !uid) { window.location.href = "login.html"; }
+
   document.getElementById('dash-user-label').textContent = user;
   document.getElementById('user-initial').textContent    = (user||'?')[0].toUpperCase();
 
@@ -237,18 +263,44 @@
   document.getElementById('dash-greeting').textContent =
     h < 12 ? 'Good morning 👋' : h < 17 ? 'Good afternoon 👋' : 'Good evening 👋';
 
-  let inventory = getInventory();
-  let expenses  = getExpenses();
-  let nextId    = inventory.length ? Math.max(...inventory.map(i=>i.id))+1 : 1;
-  let nextExpId = expenses.length  ? Math.max(...expenses.map(e=>e.id))+1  : 1;
+  // ── STATE ──────────────────────────────────
+  let inventory = [];
+  let expenses  = [];
+  let nextId    = 1;
+  let nextExpId = 1;
+
+  // ── INIT — load data from Firestore ────────
+  // This runs once when the page loads.
+  // We fetch both inventory and expenses together using
+  // Promise.all (runs both fetches at the same time, faster).
+  async function init() {
+    try {
+      [inventory, expenses] = await Promise.all([
+        getInventory(),   // reads from Firestore
+        getExpenses()     // reads from Firestore
+      ]);
+
+      nextId    = inventory.length ? Math.max(...inventory.map(i=>i.id))+1 : 1;
+      nextExpId = expenses.length  ? Math.max(...expenses.map(e=>e.id))+1  : 1;
+
+      applyFilters();
+      updateStats();
+      updateStorageBar();
+    } catch(e) {
+      showToast("Could not load data. Check your connection.", "error");
+    } finally {
+      // Hide the loading spinner regardless of success or error
+      document.getElementById('loading-overlay').style.display = 'none';
+    }
+  }
 
   function updateStorageBar() {
     document.getElementById('storage-bar').textContent =
-      `Storage used: ${getStorageUsedKB()} KB  (browser localStorage)`;
+      `Storage: ${getStorageUsedKB()}`;
   }
 
-  // ── INVENTORY ─────────────────────────────
-  window.addItem = function () {
+  // ── INVENTORY — ADD ────────────────────────
+  window.addItem = async function () {
     const name   = document.getElementById('item-name').value.trim();
     const qty    = document.getElementById('item-qty').value;
     const cat    = document.getElementById('item-cat').value;
@@ -259,42 +311,56 @@
     if (!check.ok) return showToast(check.message, "error");
 
     inventory.push({ id:nextId++, name, qty:parseFloat(qty), cat, unit, status, addedAt:Date.now() });
-    saveInventory(inventory);
-    applyFilters(); renderAlerts(); updateStats(); updateStorageBar();
-    document.getElementById('item-name').value='';
-    document.getElementById('item-qty').value='1';
-    showToast(`Added "${name}" ✓`);
+
+    try {
+      await saveInventory(inventory);   // ← saves to Firestore
+      applyFilters(); renderAlerts(); updateStats();
+      document.getElementById('item-name').value='';
+      document.getElementById('item-qty').value='1';
+      showToast(`Added "${name}" ✓`);
+    } catch(e) {
+      showToast("Save failed. Check your connection.", "error");
+    }
   };
 
-  window.removeItem = function (id) {
+  window.removeItem = async function (id) {
     const item = inventory.find(i=>i.id===id);
     inventory  = inventory.filter(i=>i.id!==id);
-    saveInventory(inventory);
-    applyFilters(); renderAlerts(); updateStats(); updateStorageBar();
-    showToast(`Removed "${item?.name||'item'}"`, "warn");
+    try {
+      await saveInventory(inventory);   // ← saves to Firestore
+      applyFilters(); renderAlerts(); updateStats();
+      showToast(`Removed "${item?.name||'item'}"`, "warn");
+    } catch(e) {
+      showToast("Remove failed. Check your connection.", "error");
+    }
   };
 
-  window.updateStatus = function (id, val) {
-    inventory = inventory.map(i => i.id===id ? {...i,status:val} : i);
-    saveInventory(inventory);
-    applyFilters(); renderAlerts(); updateStats();
+  window.updateStatus = async function (id, val) {
+    inventory = inventory.map(i => i.id===id ? {...i, status:val} : i);
+    try {
+      await saveInventory(inventory);   // ← saves to Firestore
+      applyFilters(); renderAlerts(); updateStats();
+    } catch(e) {
+      showToast("Update failed.", "error");
+    }
   };
 
+  // ── INVENTORY — FILTER & RENDER ────────────
   window.applyFilters = function () {
-    const query     = document.getElementById('search-input').value;
-    const catF      = document.getElementById('filter-cat').value;
-    const statusF   = document.getElementById('filter-status').value;
-    const sortMode  = document.getElementById('sort-by').value;
+    const query    = document.getElementById('search-input').value;
+    const catF     = document.getElementById('filter-cat').value;
+    const statusF  = document.getElementById('filter-status').value;
+    const sortMode = document.getElementById('sort-by').value;
 
     let result = [...inventory];
     result = searchItems(result, query);
-    if (catF)              result = getByCategory(result, catF);
+    if (catF)                 result = getByCategory(result, catF);
     if (statusF==='expiring') result = getExpiringSoon(result);
     else if (statusF==='low') result = getLowStock(result);
     else if (statusF==='fresh') result = getFreshItems(result);
-    if (sortMode==='name') result = sortByName(result);
+    if (sortMode==='name')    result = sortByName(result);
     else if (sortMode==='qty') result = sortByQty(result);
-    else result = sortByDateAdded(result);
+    else                      result = sortByDateAdded(result);
     renderInventory(result);
   };
 
@@ -324,7 +390,7 @@
   }
 
   // ── EXPENSES ───────────────────────────────
-  window.addExpense = function () {
+  window.addExpense = async function () {
     const name   = document.getElementById('exp-name').value.trim();
     const amount = document.getElementById('exp-amount').value;
     const member = document.getElementById('exp-member-sel').value;
@@ -333,18 +399,26 @@
     if (!check.ok) return showToast(check.message, "error");
 
     expenses.push({ id:nextExpId++, name, amount:parseFloat(amount), member, date:Date.now() });
-    saveExpenses(expenses);
-    renderExpenses(); updateStats(); updateStorageBar();
-    document.getElementById('exp-name').value='';
-    document.getElementById('exp-amount').value='';
-    showToast(`Logged ₹${amount} for "${name}" ✓`);
+    try {
+      await saveExpenses(expenses);     // ← saves to Firestore
+      renderExpenses(); updateStats();
+      document.getElementById('exp-name').value='';
+      document.getElementById('exp-amount').value='';
+      showToast(`Logged ₹${amount} for "${name}" ✓`);
+    } catch(e) {
+      showToast("Save failed. Check your connection.", "error");
+    }
   };
 
-  window.removeExpense = function (id) {
+  window.removeExpense = async function (id) {
     expenses = expenses.filter(e=>e.id!==id);
-    saveExpenses(expenses);
-    renderExpenses(); updateStats();
-    showToast("Expense removed","warn");
+    try {
+      await saveExpenses(expenses);     // ← saves to Firestore
+      renderExpenses(); updateStats();
+      showToast("Expense removed","warn");
+    } catch(e) {
+      showToast("Remove failed.", "error");
+    }
   };
 
   function renderExpenses() {
@@ -398,7 +472,7 @@
       ...getFreshItems(inventory).map(i=>  ({type:'green',title:`✓ ${i.name} is fully stocked`, sub:`${i.qty} ${i.unit} · ${i.cat}`})),
     ];
     el.innerHTML=!alerts.length
-      ?`<div class="empty-state"><div class="empty-icon">✅</div>No alerts — your inventory looks great!</div>`
+      ?`<div class="empty-state"><div class="empty-icon">✅</div>No alerts — inventory looks great!</div>`
       :alerts.map(a=>`
         <div class="alert-item alert-${a.type}">
           <div class="alert-dot alert-dot-${a.type}"></div>
@@ -440,8 +514,7 @@
 
   // ── BACKUP ─────────────────────────────────
   window.doExportBackup = function() {
-    const r=exportBackup();
-    showToast(r.message);
+    const r=exportBackup(); showToast(r.message);
   };
 
   window.doImportBackup = async function(event) {
@@ -449,19 +522,29 @@
     if (!file) return;
     try {
       const r = await importBackup(file);
-      inventory=getInventory(); expenses=getExpenses();
-      applyFilters(); renderExpenses(); renderAlerts(); updateStats(); updateStorageBar();
+      // After import, re-save everything to Firestore
+      await Promise.all([
+        saveInventory(r.inventory),
+        saveExpenses(r.expenses)
+      ]);
+      inventory=r.inventory; expenses=r.expenses;
+      applyFilters(); renderExpenses(); renderAlerts(); updateStats();
       showToast(r.message);
-    } catch(err) { showToast(err,"error"); }
+    } catch(err) { showToast(String(err),"error"); }
     event.target.value='';
   };
 
   // ── CLEAR ──────────────────────────────────
-  window.clearAllData = function() {
+  window.clearAllData = async function() {
     if (!confirm("Reset all your data? This cannot be undone.")) return;
-    clearAll(); inventory=[]; expenses=[]; nextId=1; nextExpId=1;
-    applyFilters(); renderExpenses(); renderAlerts(); updateStats(); updateStorageBar();
-    showToast("All data cleared","warn");
+    try {
+      await clearAll();     // ← deletes from Firestore
+      inventory=[]; expenses=[]; nextId=1; nextExpId=1;
+      applyFilters(); renderExpenses(); renderAlerts(); updateStats();
+      showToast("All data cleared","warn");
+    } catch(e) {
+      showToast("Clear failed. Check your connection.", "error");
+    }
   };
 
   window.doLogout = async function() { await logout(); };
@@ -480,11 +563,8 @@
   function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
   function fmtDate(ts){return ts?new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):''}
 
-  // init
-  const openTab=sessionStorage.getItem('openTab');
-  if (openTab){sessionStorage.removeItem('openTab');showTab(openTab,document.querySelector(`.tab-btn[onclick*="${openTab}"]`));}
-  else { applyFilters(); }
-  updateStats(); updateStorageBar();
+  // ── KICK OFF ───────────────────────────────
+  init(); // load data from Firestore when page opens
 </script>
 </body>
 </html>
