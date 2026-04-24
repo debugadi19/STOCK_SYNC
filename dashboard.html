@@ -87,14 +87,6 @@
   .inv-table tr:last-child td { border-bottom: none; }
   .inv-table tr:hover td { background: #fafaf8; }
 
-  .status-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600;
-  }
-  .status-badge.fresh    { background: #ecfdf5; color: #065f46; }
-  .status-badge.expiring { background: #fffbeb; color: #78350f; }
-  .status-badge.low      { background: #fef2f2; color: #7f1d1d; }
-
   .status-select {
     border: 1px solid #e5e7e0 !important; border-radius: 7px !important;
     background: #fafafa !important; padding: 4px 8px !important;
@@ -509,11 +501,12 @@
 
     // Member breakdown
     const breakdown = {};
-    MEMBERS.forEach(m => breakdown[m] = 0);
-    expenses.forEach(e => { breakdown[e.member] = (breakdown[e.member] || 0) + e.amount; });
+    const allMembers = [...new Set([...MEMBERS, ...expenses.map(e => e.member)])];
+    allMembers.forEach(m => breakdown[m] = 0);
+    expenses.forEach(e => { breakdown[e.member] += e.amount; });
     const breakdownEl = document.getElementById('member-breakdown');
     if (breakdownEl) {
-      const rows = MEMBERS.filter(m => breakdown[m] > 0);
+      const rows = allMembers.filter(m => breakdown[m] > 0);
       breakdownEl.innerHTML = rows.length === 0
         ? '<p style="font-size:13px;color:#aaa;margin:0">No data yet.</p>'
         : rows.map(m => `
@@ -538,8 +531,8 @@
     const fresh    = inventory.filter(i => i.status === 'fresh');
 
     const alerts = [
-      ...expiring.map(i => ({ dot: 'red',   text: `⚠️ ${i.name} is expiring soon`, sub: `${i.qty} ${i.unit} · ${i.cat} — use or replace soon` })),
-      ...low.map(i =>      ({ dot: 'amber', text: `📉 ${i.name} is running low`,    sub: `Only ${i.qty} ${i.unit} remaining — add to shopping list` })),
+      ...expiring.map(i => ({ dot: 'amber', text: `⚠️ ${i.name} is expiring soon`, sub: `${i.qty} ${i.unit} · ${i.cat} — use or replace soon` })),
+      ...low.map(i =>      ({ dot: 'red',   text: `📉 ${i.name} is running low`,    sub: `Only ${i.qty} ${i.unit} remaining — add to shopping list` })),
       ...fresh.map(i =>    ({ dot: 'green', text: `✓ ${i.name} is stocked`,         sub: `${i.qty} ${i.unit} · ${i.cat}` })),
     ];
 
@@ -587,7 +580,7 @@
   window.downloadCSV = function() {
     if (inventory.length === 0) return showToast('No items to export', 'warn');
     const headers = ['Name','Quantity','Unit','Category','Status'];
-    const rows    = inventory.map(i => [i.name, i.qty, i.unit, i.cat, i.status]);
+    const rows    = inventory.map(i => [`"${i.name.replace(/"/g, '""')}"`, i.qty, i.unit, `"${i.cat.replace(/"/g, '""')}"`, i.status]);
     const csv     = [headers, ...rows].map(r => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url  = URL.createObjectURL(blob);
