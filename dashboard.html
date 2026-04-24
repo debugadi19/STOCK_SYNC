@@ -1,490 +1,651 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard – Stock Sync</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stock Sync – Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-  .live-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--green); display: inline-block;
-    animation: pulse 1.8s ease-in-out infinite;
-    box-shadow: 0 0 0 3px rgba(24,160,110,0.2);
-    margin-right: 6px; vertical-align: middle;
+  /* ── DASHBOARD LAYOUT ── */
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg-secondary, #f7f8f5); margin: 0; }
+
+  .dash-nav {
+    background: #fff;
+    border-bottom: 1px solid var(--border, #e5e7e0);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky; top: 0; z-index: 100;
   }
-  .user-pill {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--green-light); border: 1px solid rgba(24,160,110,0.18);
-    border-radius: 99px; padding: 4px 12px 4px 6px;
-    font-size: 12.5px; font-weight: 600; color: var(--green-text);
+  .dash-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: #111; text-decoration: none; }
+  .logo-icon { width: 32px; height: 32px; border-radius: 8px; background: #18a06e; color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .dash-user { display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: #666; }
+  .btn-logout { background: none; border: 1px solid #e5e7e0; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #555; font-family: inherit; transition: all 0.15s; }
+  .btn-logout:hover { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
+
+  /* ── MAIN CONTENT ── */
+  .dash-main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* ── STAT CARDS ── */
+  .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card {
+    background: #fff; border-radius: 14px; border: 1px solid var(--border, #e5e7e0);
+    padding: 1.2rem 1.4rem; display: flex; flex-direction: column; gap: 4px;
   }
-  .user-avatar {
-    width: 24px; height: 24px; border-radius: 50%;
-    background: linear-gradient(135deg,var(--green),var(--green-dark));
-    color: #fff; font-size: 10px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
+  .stat-card-label { font-size: 12px; color: #888; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-card-value { font-size: 26px; font-weight: 700; color: #111; }
+  .stat-card-sub { font-size: 12px; color: #aaa; }
+  .stat-card.green { border-left: 4px solid #18a06e; }
+  .stat-card.yellow { border-left: 4px solid #f59e0b; }
+  .stat-card.red { border-left: 4px solid #ef4444; }
+  .stat-card.blue { border-left: 4px solid #3b82f6; }
+
+  /* ── TABS ── */
+  .tab-bar { display: flex; gap: 4px; background: #fff; border: 1px solid var(--border, #e5e7e0); border-radius: 12px; padding: 5px; margin-bottom: 1.5rem; width: fit-content; }
+  .tab-btn {
+    padding: 8px 20px; border-radius: 8px; border: none; background: none;
+    font-size: 13.5px; font-weight: 500; cursor: pointer; font-family: inherit;
+    color: #666; transition: all 0.15s;
   }
-  .tab-pane { animation: fadeInUp 0.22s ease both; }
-  .table-wrap {
-    overflow-x: auto; border: 1px solid var(--border);
-    border-radius: var(--radius-lg); background: var(--bg-primary);
-    box-shadow: var(--shadow-sm);
+  .tab-btn:hover { background: #f3f4f0; color: #111; }
+  .tab-btn.active { background: #18a06e; color: #fff; }
+
+  /* ── PANEL ── */
+  .panel { background: #fff; border-radius: 16px; border: 1px solid var(--border, #e5e7e0); padding: 1.5rem; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 10px; }
+  .panel-title { font-size: 15px; font-weight: 700; color: #111; margin: 0; }
+
+  /* ── ADD ITEM FORM ── */
+  .add-form { display: flex; gap: 10px; margin-bottom: 1.4rem; flex-wrap: wrap; align-items: flex-end; }
+  .add-form input, .add-form select {
+    border: 1px solid #e5e7e0; border-radius: 9px; padding: 9px 12px;
+    font-size: 13.5px; font-family: inherit; color: #111; background: #fafafa;
+    outline: none; transition: border 0.15s;
   }
-  .exp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
-  @media (max-width: 640px) { .exp-grid { grid-template-columns: 1fr; } }
-  .action-bar { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
-  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
-  .filter-bar input, .filter-bar select {
-    padding: 7px 12px; border: 1px solid var(--border-md);
-    border-radius: var(--radius-md); font-size: 13px; font-family: inherit;
-    background: var(--bg-primary); color: var(--text-primary);
-    outline: none; transition: all 0.18s;
+  .add-form input:focus, .add-form select:focus { border-color: #18a06e; background: #fff; }
+  .add-form input[placeholder="Item name"] { flex: 1; min-width: 140px; }
+  .add-form input[type="number"] { width: 80px; }
+  .btn-add {
+    background: #18a06e; color: #fff; border: none; border-radius: 9px;
+    padding: 9px 18px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: background 0.15s; white-space: nowrap;
   }
-  .filter-bar input:focus, .filter-bar select:focus {
-    border-color: var(--green); box-shadow: 0 0 0 3px rgba(24,160,110,0.12);
+  .btn-add:hover { background: #15906a; }
+
+  /* ── TABLE ── */
+  .inv-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .inv-table th {
+    text-align: left; padding: 8px 12px; font-size: 11.5px; font-weight: 600;
+    color: #888; text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 1px solid #f0f0ec;
   }
-  .storage-bar { font-size: 11.5px; color: var(--text-tertiary); margin-top: 6px; }
-  #backup-file-input { display: none; }
-  .backup-row {
-    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
-    background: var(--bg-secondary); border: 1px solid var(--border);
-    border-radius: var(--radius-md); padding: 10px 14px; margin-top: 10px; font-size: 13px;
+  .inv-table td { padding: 10px 12px; border-bottom: 1px solid #f7f8f5; vertical-align: middle; }
+  .inv-table tr:last-child td { border-bottom: none; }
+  .inv-table tr:hover td { background: #fafaf8; }
+
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600;
   }
-  .backup-row span { color: var(--text-secondary); flex: 1; }
+  .status-badge.fresh    { background: #ecfdf5; color: #065f46; }
+  .status-badge.expiring { background: #fffbeb; color: #78350f; }
+  .status-badge.low      { background: #fef2f2; color: #7f1d1d; }
+
+  .status-select {
+    border: 1px solid #e5e7e0 !important; border-radius: 7px !important;
+    background: #fafafa !important; padding: 4px 8px !important;
+    font-size: 12px !important; cursor: pointer; font-family: inherit;
+    color: #333 !important; outline: none;
+  }
+  .status-select:focus { border-color: #18a06e !important; }
+
+  .btn-danger {
+    background: none; border: 1px solid #fca5a5; color: #b91c1c;
+    border-radius: 7px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .btn-danger:hover { background: #fef2f2; }
+
+  /* ── EXPENSES ── */
+  .exp-form { display: flex; gap: 10px; margin-bottom: 1.4rem; flex-wrap: wrap; align-items: flex-end; }
+  .exp-form input, .exp-form select {
+    border: 1px solid #e5e7e0; border-radius: 9px; padding: 9px 12px;
+    font-size: 13.5px; font-family: inherit; color: #111; background: #fafafa; outline: none; transition: border 0.15s;
+  }
+  .exp-form input:focus, .exp-form select:focus { border-color: #18a06e; background: #fff; }
+  .exp-form input[placeholder="Description"] { flex: 1; min-width: 140px; }
+  .exp-form input[placeholder="Amount (₹)"] { width: 120px; }
+
+  .exp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.2rem; }
+  .exp-stat { background: #f7f8f5; border-radius: 10px; padding: 12px 14px; }
+  .exp-stat-label { font-size: 11px; color: #999; font-weight: 500; text-transform: uppercase; }
+  .exp-stat-value { font-size: 20px; font-weight: 700; color: #111; }
+
+  .expense-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid #f0f0ec;
+  }
+  .expense-item:last-child { border-bottom: none; }
+  .expense-name { font-weight: 600; font-size: 13.5px; color: #111; }
+  .expense-meta { font-size: 12px; color: #aaa; margin-top: 2px; }
+  .expense-amount { font-weight: 700; color: #18a06e; font-size: 14px; }
+  .expense-right { display: flex; align-items: center; gap: 10px; }
+
+  /* ── ALERTS ── */
+  .alert-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 14px; border-radius: 10px; margin-bottom: 8px;
+  }
+  .alert-item:last-child { margin-bottom: 0; }
+  .alert-red    { background: #fef2f2; border: 1px solid #fecaca; }
+  .alert-amber  { background: #fffbeb; border: 1px solid #fde68a; }
+  .alert-green  { background: #ecfdf5; border: 1px solid #86efac; }
+  .alert-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .alert-dot-red    { background: #ef4444; }
+  .alert-dot-amber  { background: #f59e0b; }
+  .alert-dot-green  { background: #18a06e; }
+  .alert-title { font-weight: 600; font-size: 13.5px; color: #111; }
+  .alert-sub   { font-size: 12px; color: #666; margin-top: 2px; }
+
+  /* ── MEMBER BREAKDOWN ── */
+  .breakdown-section { margin-top: 1.2rem; border-top: 1px solid #f0f0ec; padding-top: 1rem; }
+  .breakdown-title { font-size: 12px; font-weight: 600; color: #999; text-transform: uppercase; margin-bottom: 8px; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align: center; padding: 40px 20px; color: #aaa; }
+  .empty-icon { font-size: 32px; margin-bottom: 8px; }
+  .empty-state p { font-size: 13.5px; margin: 0; }
+
+  /* ── ACTION ROW ── */
+  .action-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-outline-sm {
+    background: none; border: 1px solid #e5e7e0; border-radius: 8px;
+    padding: 7px 14px; font-size: 12.5px; font-weight: 500; cursor: pointer;
+    color: #555; font-family: inherit; transition: all 0.15s;
+  }
+  .btn-outline-sm:hover { background: #f3f4f0; border-color: #ccc; }
+  .btn-danger-sm {
+    background: none; border: 1px solid #fca5a5; border-radius: 8px;
+    padding: 7px 14px; font-size: 12.5px; font-weight: 500; cursor: pointer;
+    color: #b91c1c; font-family: inherit; transition: all 0.15s;
+  }
+  .btn-danger-sm:hover { background: #fef2f2; }
+
+  /* ── TOAST ANIM ── */
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 600px) {
+    .dash-main { padding: 1rem; }
+    .stat-cards { grid-template-columns: 1fr 1fr; }
+    .exp-stats { grid-template-columns: 1fr; }
+    .add-form, .exp-form { flex-direction: column; }
+    .add-form input[type="number"], .exp-form input[placeholder="Amount (₹)"] { width: 100%; }
+  }
 </style>
 </head>
-<body class="dash-body">
+<body>
 
+<!-- NAV -->
 <nav class="dash-nav">
-  <a class="logo" href="index.html">
+  <a class="dash-logo" href="index.html">
     <div class="logo-icon">SS</div>
     Stock Sync
   </a>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <div class="user-pill">
-      <div class="user-avatar" id="user-initial">?</div>
-      <span id="dash-user-label">—</span>
-    </div>
-    <button class="btn-outline" style="font-size:13px;padding:6px 14px" onclick="doLogout()">Logout</button>
+  <div class="dash-user">
+    <span id="user-email"></span>
+    <button class="btn-logout" onclick="doLogout()">Logout</button>
   </div>
 </nav>
 
-<main class="dash-main">
+<div class="dash-main">
 
-  <div class="dash-greeting" id="dash-greeting">Good morning 👋</div>
-  <div class="dash-sub" style="margin-bottom:1.75rem">
-    <span class="live-dot"></span>Your pantry at a glance
-  </div>
-
-  <div class="dash-stats" style="margin-bottom:2.75rem">
-    <div class="dash-stat-card">
-      <div class="dash-stat-icon" style="background:#EAF3DE">📦</div>
-      <div class="dash-stat-info">
-        <div class="dash-stat-val" id="stat-total" style="color:var(--text-primary)">0</div>
-        <div class="dash-stat-label">Total items</div>
-      </div>
+  <!-- STAT CARDS -->
+  <div class="stat-cards">
+    <div class="stat-card green">
+      <div class="stat-card-label">Total Items</div>
+      <div class="stat-card-value" id="stat-total">0</div>
+      <div class="stat-card-sub">in inventory</div>
     </div>
-    <div class="dash-stat-card">
-      <div class="dash-stat-icon" style="background:#FAEEDA">⚠️</div>
-      <div class="dash-stat-info">
-        <div class="dash-stat-val" id="stat-expiring" style="color:var(--amber)">0</div>
-        <div class="dash-stat-label">Expiring soon</div>
-      </div>
+    <div class="stat-card yellow">
+      <div class="stat-card-label">Expiring Soon</div>
+      <div class="stat-card-value" id="stat-expiring">0</div>
+      <div class="stat-card-sub">need attention</div>
     </div>
-    <div class="dash-stat-card">
-      <div class="dash-stat-icon" style="background:#FCEBEB">📉</div>
-      <div class="dash-stat-info">
-        <div class="dash-stat-val" id="stat-low" style="color:var(--red)">0</div>
-        <div class="dash-stat-label">Low stock</div>
-      </div>
+    <div class="stat-card red">
+      <div class="stat-card-label">Low Stock</div>
+      <div class="stat-card-value" id="stat-low">0</div>
+      <div class="stat-card-sub">running out</div>
     </div>
-    <div class="dash-stat-card">
-      <div class="dash-stat-icon" style="background:#E6F1FB">💸</div>
-      <div class="dash-stat-info">
-        <div class="dash-stat-val" id="stat-spend" style="color:var(--green)">₹0</div>
-        <div class="dash-stat-label">Total spent</div>
-      </div>
+    <div class="stat-card blue">
+      <div class="stat-card-label">Total Spent</div>
+      <div class="stat-card-value" id="stat-spent">₹0</div>
+      <div class="stat-card-sub">all time</div>
     </div>
   </div>
 
-  <div class="app-tabs">
+  <!-- TABS -->
+  <div class="tab-bar">
     <button class="tab-btn active" onclick="showTab('inventory', this)">📦 Inventory</button>
     <button class="tab-btn" onclick="showTab('expenses', this)">💸 Expenses</button>
     <button class="tab-btn" onclick="showTab('alerts', this)">🔔 Alerts</button>
   </div>
 
-  <!-- INVENTORY TAB -->
-  <div id="tab-inventory" class="tab-pane">
-    <div class="add-form">
-      <div class="form-label">➕ Add grocery item</div>
-      <div class="form-row">
-        <input id="item-name" type="text" placeholder="Item name (e.g. Milk)" />
-        <input id="item-qty"  type="number" placeholder="Qty" min="0.1" step="0.1" value="1" style="max-width:90px" />
+  <!-- ── INVENTORY TAB ── -->
+  <div id="tab-inventory">
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Grocery Inventory</h2>
+        <div class="action-row">
+          <button class="btn-outline-sm" onclick="downloadCSV()">⬇ Export CSV</button>
+          <button class="btn-danger-sm" onclick="clearAllData()">🗑 Clear All</button>
+        </div>
+      </div>
+
+      <!-- Add Item Form -->
+      <div class="add-form">
+        <input type="text"   id="item-name"   placeholder="Item name" />
+        <input type="number" id="item-qty"    placeholder="Qty" value="1" min="0.1" step="0.1" />
         <select id="item-unit">
-          <option value="kg">kg</option><option value="g">g</option>
-          <option value="l">litre</option><option value="ml">ml</option>
-          <option value="pack">packs</option><option value="pcs">pieces</option>
+          <option value="kg">kg</option>
+          <option value="g">g</option>
+          <option value="L">L</option>
+          <option value="ml">ml</option>
+          <option value="pcs" selected>pcs</option>
+          <option value="dozen">dozen</option>
+          <option value="packet">packet</option>
         </select>
         <select id="item-cat">
-          <option>Dairy</option><option>Vegetables</option><option>Grains</option>
-          <option>Fruits</option><option>Snacks</option><option>Beverages</option><option>Other</option>
+          <option value="Vegetables">🥦 Vegetables</option>
+          <option value="Dairy">🥛 Dairy</option>
+          <option value="Grains">🌾 Grains</option>
+          <option value="Meat">🥩 Meat</option>
+          <option value="Snacks">🍿 Snacks</option>
+          <option value="Beverages">☕ Beverages</option>
+          <option value="Fruits">🍎 Fruits</option>
+          <option value="Other">📦 Other</option>
         </select>
         <select id="item-status">
           <option value="fresh">🟢 Fresh</option>
-          <option value="expiring">🟡 Expiring soon</option>
-          <option value="low">🔴 Low stock</option>
+          <option value="expiring">🟡 Expiring</option>
+          <option value="low">🔴 Low Stock</option>
         </select>
-        <button class="btn-primary" onclick="addItem()">Add item</button>
+        <button class="btn-add" onclick="addItem()">+ Add Item</button>
       </div>
-      <div class="action-bar">
-        <button class="btn-csv" onclick="downloadCSV()">⬇ Download CSV</button>
-        <button class="btn-outline" style="font-size:12.5px;padding:6px 14px;" onclick="clearAllData()">Reset all data</button>
-      </div>
-      <div class="backup-row">
-        <span>💾 Backup your data</span>
-        <button class="btn-outline" style="font-size:12px;padding:5px 12px;" onclick="doExportBackup()">Export JSON</button>
-        <button class="btn-outline" style="font-size:12px;padding:5px 12px;" onclick="document.getElementById('backup-file-input').click()">Import JSON</button>
-        <input type="file" id="backup-file-input" accept=".json" onchange="doImportBackup(event)" />
-      </div>
-      <div class="storage-bar" id="storage-bar">Storage used: —</div>
-    </div>
 
-    <div class="filter-bar">
-      <input id="search-input" type="text" placeholder="🔍 Search items…" oninput="applyFilters()" style="flex:2;min-width:160px" />
-      <select id="filter-cat" onchange="applyFilters()">
-        <option value="">All categories</option>
-        <option>Dairy</option><option>Vegetables</option><option>Grains</option>
-        <option>Fruits</option><option>Snacks</option><option>Beverages</option><option>Other</option>
-      </select>
-      <select id="filter-status" onchange="applyFilters()">
-        <option value="">All statuses</option>
-        <option value="fresh">🟢 Fresh</option>
-        <option value="expiring">🟡 Expiring</option>
-        <option value="low">🔴 Low Stock</option>
-      </select>
-      <select id="sort-by" onchange="applyFilters()">
-        <option value="date">Sort: Date added</option>
-        <option value="name">Sort: Name A→Z</option>
-        <option value="qty">Sort: Qty low→high</option>
-      </select>
-    </div>
-
-    <div class="table-wrap">
-      <table class="inventory-table">
-        <thead>
-          <tr><th>Item</th><th>Quantity</th><th>Category</th><th>Unit</th><th>Status</th><th></th></tr>
-        </thead>
-        <tbody id="inventory-body"></tbody>
-      </table>
+      <!-- Inventory Table -->
+      <div style="overflow-x:auto">
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Quantity</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="inventory-body">
+            <tr><td colspan="5">
+              <div class="empty-state">
+                <div class="empty-icon">📦</div>
+                <p>No items yet — add your first grocery item above.</p>
+              </div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <!-- EXPENSES TAB -->
-  <div id="tab-expenses" class="tab-pane" style="display:none">
-    <div class="summary-cards">
-      <div class="summary-card"><div class="s-label">Total spent</div><div class="s-val" id="total-spent">₹0</div></div>
-      <div class="summary-card"><div class="s-label">Per person</div><div class="s-val" id="per-person">₹0</div></div>
-      <div class="summary-card"><div class="s-label">This week</div><div class="s-val" id="this-week">₹0</div></div>
-    </div>
-    <div class="exp-grid">
-      <div class="add-form" style="margin-bottom:0">
-        <div class="form-label">💳 Log expense</div>
-        <div class="form-row">
-          <input id="exp-name" type="text" placeholder="Item / description" />
-          <input id="exp-amount" type="number" placeholder="Amount (₹)" min="1" style="max-width:130px" />
-          <select id="exp-member-sel">
-            <option>Raj</option><option>Gaurav</option><option>Priya</option><option>Other</option>
-          </select>
-          <button class="btn-primary" onclick="addExpense()">Add</button>
+  <!-- ── EXPENSES TAB ── -->
+  <div id="tab-expenses" style="display:none">
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Expense Tracker</h2>
+      </div>
+
+      <div class="exp-stats">
+        <div class="exp-stat">
+          <div class="exp-stat-label">Total Spent</div>
+          <div class="exp-stat-value" id="total-spent">₹0</div>
+        </div>
+        <div class="exp-stat">
+          <div class="exp-stat-label">Per Person</div>
+          <div class="exp-stat-value" id="per-person">₹0</div>
+        </div>
+        <div class="exp-stat">
+          <div class="exp-stat-label">This Week</div>
+          <div class="exp-stat-value" id="this-week">₹0</div>
         </div>
       </div>
-      <div class="add-form" style="margin-bottom:0">
-        <div class="form-label">👥 Member breakdown</div>
-        <div id="member-breakdown" style="font-size:13px;color:var(--text-secondary)">No expenses yet.</div>
+
+      <!-- Add Expense Form -->
+      <div class="exp-form">
+        <input type="text"   id="exp-name"       placeholder="Description" />
+        <input type="number" id="exp-amount"      placeholder="Amount (₹)" min="1" />
+        <select id="exp-member-sel">
+          <option value="Raj">Raj</option>
+          <option value="Gaurav">Gaurav</option>
+          <option value="Priya">Priya</option>
+          <option value="Other">Other</option>
+        </select>
+        <button class="btn-add" onclick="addExpense()">+ Log Expense</button>
+      </div>
+
+      <div id="expense-list">
+        <div class="empty-state"><div class="empty-icon">💸</div><p>No expenses logged yet.</p></div>
+      </div>
+
+      <div class="breakdown-section">
+        <div class="breakdown-title">Member Breakdown</div>
+        <div id="member-breakdown"></div>
       </div>
     </div>
-    <div class="expense-list" id="expense-list"></div>
   </div>
 
-  <!-- ALERTS TAB -->
-  <div id="tab-alerts" class="tab-pane" style="display:none">
-    <div class="alert-list" id="alert-list"></div>
+  <!-- ── ALERTS TAB ── -->
+  <div id="tab-alerts" style="display:none">
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Stock Alerts</h2>
+      </div>
+      <div id="alert-list">
+        <div class="empty-state"><div class="empty-icon">✅</div><p>No alerts — your inventory looks great!</p></div>
+      </div>
+    </div>
   </div>
 
-</main>
+</div><!-- /dash-main -->
 
+<!-- Load script as MODULE so imports work -->
 <script type="module">
-  import { logout }                                          from './auth.js';
-  import { getInventory, saveInventory,
-           getExpenses,  saveExpenses,
-           clearAll,     getStorageUsedKB }                  from './data.js';
-  import { validateItem, validateExpense }                   from './validate.js';
-  import { searchItems,      getByCategory,
-           getLowStock,      getExpiringSoon,   getFreshItems,
-           sortByName,       sortByQty,         sortByDateAdded,
-           getInventorySummary, getMemberBreakdown,
-           getTotalSpent,    getRecentExpenses }              from './filter.js';
-  import { exportBackup, importBackup }                      from './backup.js';
+  import { getInventory, saveInventory, getExpenses, saveExpenses, clearAll } from './data.js';
+  import { logout } from './auth.js';
 
-  // auth guard
-  const user = localStorage.getItem("user");
-  if (!user) { window.location.href = "login.html"; }
-  document.getElementById('dash-user-label').textContent = user;
-  document.getElementById('user-initial').textContent    = (user||'?')[0].toUpperCase();
+  // ── AUTH GUARD ──────────────────────────────
+  const user = localStorage.getItem('user');
+  if (!user) window.location.href = 'login.html';
+  const emailEl = document.getElementById('user-email');
+  if (emailEl) emailEl.textContent = user;
 
-  const h = new Date().getHours();
-  document.getElementById('dash-greeting').textContent =
-    h < 12 ? 'Good morning 👋' : h < 17 ? 'Good afternoon 👋' : 'Good evening 👋';
+  window.doLogout = async function() {
+    await logout();
+  };
 
+  // ── INVENTORY ───────────────────────────────
   let inventory = getInventory();
-  let expenses  = getExpenses();
-  let nextId    = inventory.length ? Math.max(...inventory.map(i=>i.id))+1 : 1;
-  let nextExpId = expenses.length  ? Math.max(...expenses.map(e=>e.id))+1  : 1;
+  let nextId = inventory.length ? Math.max(...inventory.map(i => i.id)) + 1 : 1;
 
-  function updateStorageBar() {
-    document.getElementById('storage-bar').textContent =
-      `Storage used: ${getStorageUsedKB()} KB  (browser localStorage)`;
-  }
-
-  // ── INVENTORY ─────────────────────────────
-  window.addItem = function () {
+  window.addItem = function() {
     const name   = document.getElementById('item-name').value.trim();
-    const qty    = document.getElementById('item-qty').value;
+    const qty    = parseFloat(document.getElementById('item-qty').value) || 1;
     const cat    = document.getElementById('item-cat').value;
     const unit   = document.getElementById('item-unit').value;
     const status = document.getElementById('item-status').value;
 
-    const check = validateItem(name, qty, inventory);
-    if (!check.ok) return showToast(check.message, "error");
+    if (!name) return showToast('Please enter an item name', 'error');
+    if (inventory.some(i => i.name.toLowerCase() === name.toLowerCase()))
+      return showToast(`"${name}" is already in inventory`, 'error');
 
-    inventory.push({ id:nextId++, name, qty:parseFloat(qty), cat, unit, status, addedAt:Date.now() });
+    inventory.push({ id: nextId++, name, qty, cat, unit, status, addedAt: Date.now() });
     saveInventory(inventory);
-    applyFilters(); renderAlerts(); updateStats(); updateStorageBar();
-    document.getElementById('item-name').value='';
-    document.getElementById('item-qty').value='1';
+    renderAll();
+
+    document.getElementById('item-name').value = '';
+    document.getElementById('item-qty').value  = '1';
     showToast(`Added "${name}" ✓`);
   };
 
-  window.removeItem = function (id) {
-    const item = inventory.find(i=>i.id===id);
-    inventory  = inventory.filter(i=>i.id!==id);
+  window.removeItem = function(id) {
+    const item = inventory.find(i => i.id === id);
+    inventory = inventory.filter(i => i.id !== id);
     saveInventory(inventory);
-    applyFilters(); renderAlerts(); updateStats(); updateStorageBar();
-    showToast(`Removed "${item?.name||'item'}"`, "warn");
+    renderAll();
+    showToast(`Removed "${item?.name || 'item'}"`, 'warn');
   };
 
-  window.updateStatus = function (id, val) {
-    inventory = inventory.map(i => i.id===id ? {...i,status:val} : i);
+  window.updateStatus = function(id, newStatus) {
+    inventory = inventory.map(i => i.id === id ? { ...i, status: newStatus } : i);
     saveInventory(inventory);
-    applyFilters(); renderAlerts(); updateStats();
+    renderInventory();
+    renderAlerts();
+    updateStatCards();
   };
 
-  window.applyFilters = function () {
-    const query     = document.getElementById('search-input').value;
-    const catF      = document.getElementById('filter-cat').value;
-    const statusF   = document.getElementById('filter-status').value;
-    const sortMode  = document.getElementById('sort-by').value;
-
-    let result = [...inventory];
-    result = searchItems(result, query);
-    if (catF)              result = getByCategory(result, catF);
-    if (statusF==='expiring') result = getExpiringSoon(result);
-    else if (statusF==='low') result = getLowStock(result);
-    else if (statusF==='fresh') result = getFreshItems(result);
-    if (sortMode==='name') result = sortByName(result);
-    else if (sortMode==='qty') result = sortByQty(result);
-    else result = sortByDateAdded(result);
-    renderInventory(result);
-  };
-
-  function renderInventory(items) {
+  function renderInventory() {
     const el = document.getElementById('inventory-body');
     if (!el) return;
-    if (!items||!items.length) {
-      el.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📦</div>No items found.</div></td></tr>`;
+
+    if (inventory.length === 0) {
+      el.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📦</div><p>No items yet — add your first grocery item above.</p></div></td></tr>`;
       return;
     }
-    el.innerHTML = items.map(i=>`
+
+    el.innerHTML = inventory.map(i => `
       <tr>
-        <td style="font-weight:600">${esc(i.name)}</td>
-        <td style="color:var(--text-secondary)">${i.qty} ${i.unit}</td>
-        <td><span style="font-size:11.5px;font-weight:600;background:var(--bg-secondary);padding:3px 8px;border-radius:5px;color:var(--text-secondary)">${i.cat}</span></td>
-        <td style="color:var(--text-tertiary);font-size:12.5px">${i.unit}</td>
+        <td style="font-weight:600">${escHtml(i.name)}</td>
+        <td>${i.qty} ${i.unit}</td>
+        <td><span style="font-size:12px;color:#888">${i.cat}</span></td>
         <td>
-          <select onchange="updateStatus(${i.id},this.value)"
-            style="border:none;background:transparent;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;outline:none;padding:2px 4px;">
-            <option value="fresh"    ${i.status==='fresh'   ?'selected':''}>🟢 Fresh</option>
-            <option value="expiring" ${i.status==='expiring'?'selected':''}>🟡 Expiring</option>
-            <option value="low"      ${i.status==='low'     ?'selected':''}>🔴 Low Stock</option>
+          <select class="status-select" onchange="updateStatus(${i.id}, this.value)">
+            <option value="fresh"    ${i.status==='fresh'    ?'selected':''}>🟢 Fresh</option>
+            <option value="expiring" ${i.status==='expiring' ?'selected':''}>🟡 Expiring</option>
+            <option value="low"      ${i.status==='low'      ?'selected':''}>🔴 Low Stock</option>
           </select>
         </td>
         <td><button class="btn-danger" onclick="removeItem(${i.id})">Remove</button></td>
-      </tr>`).join('');
+      </tr>
+    `).join('');
   }
 
-  // ── EXPENSES ───────────────────────────────
-  window.addExpense = function () {
+  // ── EXPENSES ────────────────────────────────
+  let expenses  = getExpenses();
+  let nextExpId = expenses.length ? Math.max(...expenses.map(e => e.id)) + 1 : 1;
+  const MEMBERS = ['Raj', 'Gaurav', 'Priya', 'Other'];
+
+  window.addExpense = function() {
     const name   = document.getElementById('exp-name').value.trim();
-    const amount = document.getElementById('exp-amount').value;
+    const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
     const member = document.getElementById('exp-member-sel').value;
 
-    const check = validateExpense(name, amount);
-    if (!check.ok) return showToast(check.message, "error");
+    if (!name)   return showToast('Enter a description', 'error');
+    if (!amount) return showToast('Enter a valid amount', 'error');
 
-    expenses.push({ id:nextExpId++, name, amount:parseFloat(amount), member, date:Date.now() });
+    expenses.push({ id: nextExpId++, name, amount, member, date: Date.now() });
     saveExpenses(expenses);
-    renderExpenses(); updateStats(); updateStorageBar();
-    document.getElementById('exp-name').value='';
-    document.getElementById('exp-amount').value='';
+    renderExpenses();
+    updateStatCards();
+
+    document.getElementById('exp-name').value   = '';
+    document.getElementById('exp-amount').value = '';
     showToast(`Logged ₹${amount} for "${name}" ✓`);
   };
 
-  window.removeExpense = function (id) {
-    expenses = expenses.filter(e=>e.id!==id);
+  window.removeExpense = function(id) {
+    expenses = expenses.filter(e => e.id !== id);
     saveExpenses(expenses);
-    renderExpenses(); updateStats();
-    showToast("Expense removed","warn");
+    renderExpenses();
+    updateStatCards();
+    showToast('Expense removed', 'warn');
   };
 
   function renderExpenses() {
     const el = document.getElementById('expense-list');
     if (!el) return;
-    const total     = getTotalSpent(expenses);
-    const members   = [...new Set(expenses.map(e=>e.member))].length||1;
-    const weekTotal = getTotalSpent(getRecentExpenses(expenses,7));
-    const breakdown = getMemberBreakdown(expenses);
 
-    document.getElementById('total-spent').textContent='₹'+total.toLocaleString('en-IN');
-    document.getElementById('per-person').textContent ='₹'+Math.round(total/members).toLocaleString('en-IN');
-    document.getElementById('this-week').textContent  ='₹'+weekTotal.toLocaleString('en-IN');
+    const total     = expenses.reduce((s, e) => s + e.amount, 0);
+    const members   = [...new Set(expenses.map(e => e.member))].length || 1;
+    const perPerson = Math.round(total / members);
+    const weekAgo   = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const weekTotal = expenses.filter(e => e.date > weekAgo).reduce((s, e) => s + e.amount, 0);
 
-    const bEl=document.getElementById('member-breakdown');
-    if (bEl) {
-      const entries=Object.entries(breakdown);
-      bEl.innerHTML=!entries.length
-        ?'<span style="color:var(--text-tertiary)">No expenses yet.</span>'
-        :entries.map(([m,amt])=>`
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">${m[0]}</div>
-              <span style="font-weight:500">${m}</span>
-            </div>
-            <span style="font-weight:700;color:var(--green)">₹${amt.toLocaleString('en-IN')}</span>
-          </div>`).join('');
-    }
-    el.innerHTML=!expenses.length
-      ?`<div class="empty-state"><div class="empty-icon">💸</div>No expenses logged yet.</div>`
-      :[...expenses].reverse().map(e=>`
+    const totalEl = document.getElementById('total-spent');
+    const perEl   = document.getElementById('per-person');
+    const weekEl  = document.getElementById('this-week');
+    if (totalEl) totalEl.textContent = '₹' + total.toLocaleString('en-IN');
+    if (perEl)   perEl.textContent   = '₹' + perPerson.toLocaleString('en-IN');
+    if (weekEl)  weekEl.textContent  = '₹' + weekTotal.toLocaleString('en-IN');
+
+    if (expenses.length === 0) {
+      el.innerHTML = `<div class="empty-state"><div class="empty-icon">💸</div><p>No expenses logged yet.</p></div>`;
+    } else {
+      el.innerHTML = [...expenses].reverse().map(e => `
         <div class="expense-item">
-          <div class="expense-left">
-            <div class="expense-name">${esc(e.name)}</div>
-            <div class="expense-meta">${e.member} · ${fmtDate(e.date)}</div>
+          <div>
+            <div class="expense-name">${escHtml(e.name)}</div>
+            <div class="expense-meta">${e.member} · ${formatDate(e.date)}</div>
           </div>
           <div class="expense-right">
             <div class="expense-amount">₹${e.amount.toLocaleString('en-IN')}</div>
             <button class="btn-danger" onclick="removeExpense(${e.id})">×</button>
           </div>
-        </div>`).join('');
+        </div>
+      `).join('');
+    }
+
+    // Member breakdown
+    const breakdown = {};
+    MEMBERS.forEach(m => breakdown[m] = 0);
+    expenses.forEach(e => { breakdown[e.member] = (breakdown[e.member] || 0) + e.amount; });
+    const breakdownEl = document.getElementById('member-breakdown');
+    if (breakdownEl) {
+      const rows = MEMBERS.filter(m => breakdown[m] > 0);
+      breakdownEl.innerHTML = rows.length === 0
+        ? '<p style="font-size:13px;color:#aaa;margin:0">No data yet.</p>'
+        : rows.map(m => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f0f0ec;font-size:13.5px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:28px;height:28px;border-radius:50%;background:#ecfdf5;color:#065f46;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">${m[0]}</div>
+              ${m}
+            </div>
+            <span style="font-weight:700;color:#18a06e">₹${breakdown[m].toLocaleString('en-IN')}</span>
+          </div>
+        `).join('');
+    }
   }
 
-  // ── ALERTS ─────────────────────────────────
+  // ── ALERTS ──────────────────────────────────
   function renderAlerts() {
-    const el=document.getElementById('alert-list');
+    const el = document.getElementById('alert-list');
     if (!el) return;
-    const alerts=[
-      ...getExpiringSoon(inventory).map(i=>({type:'red',  title:`⚠️ ${i.name} is expiring soon`,sub:`${i.qty} ${i.unit} · ${i.cat}`})),
-      ...getLowStock(inventory).map(i=>    ({type:'amber',title:`📉 ${i.name} is running low`,  sub:`Only ${i.qty} ${i.unit} remaining`})),
-      ...getFreshItems(inventory).map(i=>  ({type:'green',title:`✓ ${i.name} is fully stocked`, sub:`${i.qty} ${i.unit} · ${i.cat}`})),
+
+    const expiring = inventory.filter(i => i.status === 'expiring');
+    const low      = inventory.filter(i => i.status === 'low');
+    const fresh    = inventory.filter(i => i.status === 'fresh');
+
+    const alerts = [
+      ...expiring.map(i => ({ dot: 'red',   text: `⚠️ ${i.name} is expiring soon`, sub: `${i.qty} ${i.unit} · ${i.cat} — use or replace soon` })),
+      ...low.map(i =>      ({ dot: 'amber', text: `📉 ${i.name} is running low`,    sub: `Only ${i.qty} ${i.unit} remaining — add to shopping list` })),
+      ...fresh.map(i =>    ({ dot: 'green', text: `✓ ${i.name} is stocked`,         sub: `${i.qty} ${i.unit} · ${i.cat}` })),
     ];
-    el.innerHTML=!alerts.length
-      ?`<div class="empty-state"><div class="empty-icon">✅</div>No alerts — your inventory looks great!</div>`
-      :alerts.map(a=>`
-        <div class="alert-item alert-${a.type}">
-          <div class="alert-dot alert-dot-${a.type}"></div>
-          <div><div class="alert-title">${a.title}</div><div class="alert-sub">${a.sub}</div></div>
-        </div>`).join('');
+
+    if (alerts.length === 0) {
+      el.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><p>No alerts — your inventory looks great!</p></div>`;
+      return;
+    }
+
+    el.innerHTML = alerts.map(a => `
+      <div class="alert-item alert-${a.dot}">
+        <div class="alert-dot alert-dot-${a.dot}"></div>
+        <div>
+          <div class="alert-title">${a.text}</div>
+          <div class="alert-sub">${a.sub}</div>
+        </div>
+      </div>
+    `).join('');
   }
 
-  // ── STATS ──────────────────────────────────
-  function updateStats() {
-    const s=getInventorySummary(inventory);
-    document.getElementById('stat-total').textContent    = s.total;
-    document.getElementById('stat-expiring').textContent = s.expiring;
-    document.getElementById('stat-low').textContent      = s.low;
-    document.getElementById('stat-spend').textContent    = '₹'+getTotalSpent(expenses).toLocaleString('en-IN');
+  // ── STAT CARDS ──────────────────────────────
+  function updateStatCards() {
+    const totalEl    = document.getElementById('stat-total');
+    const expiringEl = document.getElementById('stat-expiring');
+    const lowEl      = document.getElementById('stat-low');
+    const spentEl    = document.getElementById('stat-spent');
+    if (totalEl)    totalEl.textContent    = inventory.length;
+    if (expiringEl) expiringEl.textContent = inventory.filter(i => i.status === 'expiring').length;
+    if (lowEl)      lowEl.textContent      = inventory.filter(i => i.status === 'low').length;
+    if (spentEl)    spentEl.textContent    = '₹' + expenses.reduce((s, e) => s + e.amount, 0).toLocaleString('en-IN');
   }
 
-  // ── TABS ───────────────────────────────────
-  window.showTab = function(tab,btn) {
-    ['inventory','expenses','alerts'].forEach(t=>
-      document.getElementById('tab-'+t).style.display = t===tab?'block':'none');
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  // ── TAB SWITCHING ───────────────────────────
+  window.showTab = function(tab, btn) {
+    ['inventory', 'expenses', 'alerts'].forEach(t => {
+      const el = document.getElementById('tab-' + t);
+      if (el) el.style.display = t === tab ? 'block' : 'none';
+    });
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-    if (tab==='alerts')   renderAlerts();
-    if (tab==='expenses') renderExpenses();
+    if (tab === 'alerts')   renderAlerts();
+    if (tab === 'expenses') renderExpenses();
   };
 
-  // ── CSV ────────────────────────────────────
-  window.downloadCSV = function () {
-    if (!inventory.length) return showToast("No items to export","warn");
-    const csv=[['Name','Quantity','Unit','Category','Status','Added On'],
-      ...inventory.map(i=>[i.name,i.qty,i.unit,i.cat,i.status,fmtDate(i.addedAt)])
-    ].map(r=>r.join(',')).join('\n');
-    Object.assign(document.createElement('a'),{
-      href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),
-      download:'stock-sync-inventory.csv'
-    }).click();
-    showToast("CSV downloaded ✓");
+  // ── CSV EXPORT ──────────────────────────────
+  window.downloadCSV = function() {
+    if (inventory.length === 0) return showToast('No items to export', 'warn');
+    const headers = ['Name','Quantity','Unit','Category','Status'];
+    const rows    = inventory.map(i => [i.name, i.qty, i.unit, i.cat, i.status]);
+    const csv     = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'stock-sync-inventory.csv'; a.click();
+    URL.revokeObjectURL(url);
+    showToast('CSV downloaded ✓');
   };
 
-  // ── BACKUP ─────────────────────────────────
-  window.doExportBackup = function() {
-    const r=exportBackup();
-    showToast(r.message);
-  };
-
-  window.doImportBackup = async function(event) {
-    const file=event.target.files[0];
-    if (!file) return;
-    try {
-      const r = await importBackup(file);
-      inventory=getInventory(); expenses=getExpenses();
-      applyFilters(); renderExpenses(); renderAlerts(); updateStats(); updateStorageBar();
-      showToast(r.message);
-    } catch(err) { showToast(err,"error"); }
-    event.target.value='';
-  };
-
-  // ── CLEAR ──────────────────────────────────
+  // ── CLEAR ALL ───────────────────────────────
   window.clearAllData = function() {
-    if (!confirm("Reset all your data? This cannot be undone.")) return;
-    clearAll(); inventory=[]; expenses=[]; nextId=1; nextExpId=1;
-    applyFilters(); renderExpenses(); renderAlerts(); updateStats(); updateStorageBar();
-    showToast("All data cleared","warn");
+    if (!confirm('Reset all inventory and expense data? This cannot be undone.')) return;
+    clearAll();
+    inventory = []; expenses = []; nextId = 1; nextExpId = 1;
+    renderAll();
+    showToast('All data cleared', 'warn');
   };
 
-  window.doLogout = async function() { await logout(); };
-
-  // ── TOAST ──────────────────────────────────
-  function showToast(msg,type='success') {
-    let c=document.getElementById('_tc');
-    if (!c){c=document.createElement('div');c.id='_tc';c.style.cssText='position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;';document.body.appendChild(c);}
-    const col={success:{bg:'#ecfdf5',border:'#86efac',text:'#065f46'},error:{bg:'#fef2f2',border:'#fca5a5',text:'#7f1d1d'},warn:{bg:'#fffbeb',border:'#fcd34d',text:'#78350f'}}[type]||{bg:'#ecfdf5',border:'#86efac',text:'#065f46'};
-    const t=document.createElement('div');
-    t.style.cssText=`background:${col.bg};border:1px solid ${col.border};color:${col.text};padding:11px 18px;border-radius:12px;font-size:13.5px;font-weight:600;font-family:'DM Sans',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.12);max-width:290px;`;
-    t.textContent=msg; c.appendChild(t);
-    setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300);},2800);
+  // ── TOAST ────────────────────────────────────
+  function showToast(msg, type = 'success') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      container.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;';
+      document.body.appendChild(container);
+    }
+    const c = { success:{bg:'#ecfdf5',border:'#86efac',text:'#065f46'}, error:{bg:'#fef2f2',border:'#fca5a5',text:'#7f1d1d'}, warn:{bg:'#fffbeb',border:'#fcd34d',text:'#78350f'} }[type] || {};
+    const toast = document.createElement('div');
+    toast.style.cssText = `background:${c.bg};border:1px solid ${c.border};color:${c.text};padding:10px 16px;border-radius:10px;font-size:13.5px;font-weight:500;font-family:'DM Sans',sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.08);animation:fadeInUp 0.2s ease both;max-width:280px;line-height:1.4;`;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
   }
 
-  function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
-  function fmtDate(ts){return ts?new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):''}
+  // ── HELPERS ──────────────────────────────────
+  function escHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+  function formatDate(ts) {
+    if (!ts) return '';
+    return new Date(ts).toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+  }
+  function renderAll() {
+    renderInventory(); renderExpenses(); renderAlerts(); updateStatCards();
+  }
 
-  // init
-  const openTab=sessionStorage.getItem('openTab');
-  if (openTab){sessionStorage.removeItem('openTab');showTab(openTab,document.querySelector(`.tab-btn[onclick*="${openTab}"]`));}
-  else { applyFilters(); }
-  updateStats(); updateStorageBar();
+  // ── INIT ─────────────────────────────────────
+  renderAll();
+
+  // Handle tab redirect from other pages
+  const targetTab = sessionStorage.getItem('openTab');
+  if (targetTab) {
+    sessionStorage.removeItem('openTab');
+    const btn = document.querySelector(`.tab-btn[onclick*="${targetTab}"]`);
+    showTab(targetTab, btn);
+  }
 </script>
+
 </body>
 </html>
