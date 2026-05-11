@@ -9,87 +9,125 @@
 // This lets them save a copy on their computer and restore it.
 // ─────────────────────────────────────────────
 
-import { getInventory, getExpenses, saveInventory, saveExpenses } from "./data.js";
+import { getInventory, getExpenses } from "./data.js";
+
+const CATEGORIES = new Set(["Dairy", "Vegetables", "Grains", "Fruits", "Snacks", "Beverages", "Other"]);
+const UNITS = new Set(["kg", "g", "l", "ml", "pack", "pcs"]);
+const STATUSES = new Set(["fresh", "expiring", "low"]);
 
 // ── EXPORT ────────────────────────────────────
-// Grabs all inventory + expense data and downloads
-// it as a .json file to the user's computer.
-export function exportBackup() {
-  const user = localStorage.getItem("user") || "guest";
+// Must be async because getInventory/getExpenses
+// now fetch from Firestore (they return Promises).
+export async function exportBackup() {
+  const user      = localStorage.getItem("user") || "guest";
+  const inventory = await getInventory();
+  const expenses  = await getExpenses();
 
   const backupData = {
-    exportedAt: new Date().toISOString(), // timestamp so user knows when it was made
-    user: user,
-    inventory: getInventory(),
-    expenses: getExpenses(),
+    exportedAt: new Date().toISOString(),
+    user,
+    inventory,
+    expenses,
   };
 
-  // Convert the object to a nicely formatted JSON string
-  const jsonString = JSON.stringify(backupData, null, 2);
-
-  // Create a downloadable blob (think of it as an in-memory file)
-  const blob = new Blob([jsonString], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-
-  // Create a temporary <a> tag and click it to trigger download
-  const a = document.createElement("a");
-  a.href = url;
+  const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
   a.download = `stocksync-backup-${user}-${Date.now()}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-
-  // Free up the memory used by the blob URL
   URL.revokeObjectURL(url);
 
   return { ok: true, message: "Backup downloaded successfully!" };
 }
 
 // ── IMPORT ────────────────────────────────────
-// Reads a .json backup file the user selects,
-// validates its structure, then restores the data
-// into localStorage.
-//
-// Returns a Promise because FileReader is async.
+// importBackup just parses the file and returns the data.
+// dashboard.html calls saveInventory/saveExpenses after.
 export function importBackup(file) {
   return new Promise((resolve, reject) => {
-    // Only accept .json files
     if (!file || file.type !== "application/json") {
       return reject("Please select a valid .json backup file.");
     }
-
     const reader = new FileReader();
-
-    // This runs when the file has been read
     reader.onload = function (event) {
       try {
         const data = JSON.parse(event.target.result);
-
-        // Basic structure check — make sure the file has what we expect
         if (!Array.isArray(data.inventory) || !Array.isArray(data.expenses)) {
           return reject("Invalid backup file. Missing inventory or expenses data.");
         }
 
-        // Restore data into localStorage
-        saveInventory(data.inventory);
-        saveExpenses(data.expenses);
+        const inventory = data.inventory.map(normalizeInventoryItem);
+        const expenses = data.expenses.map(normalizeExpense);
 
         resolve({
           ok: true,
-          message: `Restored ${data.inventory.length} items and ${data.expenses.length} expenses.`,
-          inventory: data.inventory,
-          expenses: data.expenses,
+          message: `Restored ${inventory.length} items and ${expenses.length} expenses.`,
+          inventory,
+          expenses,
         });
       } catch (e) {
         reject("Could not read the file. Make sure it's a valid Stock Sync backup.");
       }
     };
-
-    reader.onerror = function () {
-      reject("File reading failed. Please try again.");
-    };
-
-    // Start reading the file as text
+    reader.onerror = () => reject("File reading failed. Please try again.");
     reader.readAsText(file);
   });
+}
+
+function normalizeInventoryItem(item) {
+  if (!item || typeof item !== "object") throw new Error("Invalid inventory item");
+
+  const name = cleanText(item.name, 60);
+  const qty = Number(item.qty);
+  const cat = CATEGORIES.has(item.cat) ? item.cat : "Other";
+  const unit = UNITS.has(item.unit) ? item.unit : "pcs";
+  const status = STATUSES.has(item.status) ? item.status : "fresh";
+  const addedAt = Number(item.addedAt) || Date.now();
+
+  if (!name || name.length < 2) throw new Error("Invalid item name");
+  if (!Number.isFinite(qty) || qty <= 0 || qty > 9999) throw new Error("Invalid item quantity");
+
+  return {
+    id: cleanId(item.id),
+    name,
+    qty,
+    cat,
+    unit,
+    status,
+    addedAt
+  };
+}
+
+function normalizeExpense(item) {
+  if (!item || typeof item !== "object") throw new Error("Invalid expense");
+
+  const name = cleanText(item.name, 80);
+  const amount = Number(item.amount);
+  const member = cleanText(item.member || "Other", 40);
+  const date = Number(item.date) || Date.now();
+
+  if (!name || name.length < 2) throw new Error("Invalid expense description");
+  if (!Number.isFinite(amount) || amount <= 0 || amount > 100000) throw new Error("Invalid expense amount");
+
+  return {
+    id: cleanId(item.id),
+    name,
+    amount,
+    member,
+    date
+  };
+}
+
+function cleanText(value, maxLength) {
+  return String(value ?? "").trim().slice(0, maxLength);
+}
+
+function cleanId(value) {
+  const id = cleanText(value, 80);
+  return /^[a-zA-Z0-9_-]+$/.test(id)
+    ? id
+    : String(Date.now()) + "-" + Math.random().toString(16).slice(2);
 }
