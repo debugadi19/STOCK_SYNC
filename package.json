@@ -1,0 +1,13 @@
+{
+  "name": "stock-sync",
+  "version": "1.0.0",
+  "description": "Smart inhouse grocery inventory management app for a college project.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check auth.js && node --check backup.js && node --check data.js && node --check filter.js && node --check validate.js && node --check server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
