@@ -3,13 +3,11 @@
 // Handles login, signup, and logout using Firebase Auth.
 //
 // KEY CHANGE from the old version:
-// We now store BOTH the user's email AND their uid
-// in localStorage.
+// We store the user's email in localStorage for display.
 //
-// Why uid?
-// Firestore identifies each user's data by their uid
-// (a unique ID like "abc123xyz"). data.js reads this
-// uid to know which user's documents to read/write.
+// Firestore data access waits for Firebase Auth in data.js,
+// so the uid comes from the active Firebase session instead
+// of browser storage.
 // ─────────────────────────────────────────────
 
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -22,45 +20,35 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey:            "AIzaSyA4q6xdvReoswKx5c6dqQbFYgm2NUoceks",
-  authDomain:        "stock-sync-23cc9.firebaseapp.com",
-  projectId:         "stock-sync-23cc9",
-  storageBucket:     "stock-sync-23cc9.firebasestorage.app",
-  messagingSenderId: "952662923282",
-  appId:             "1:952662923282:web:13d91673ecb8ca0cf520cb"
+  apiKey: "AIzaSyA7ZJDsSFE4Phgi1M8egSEk_fQQxLXUoVQ",
+  authDomain: "stocksync-a83f5.firebaseapp.com",
+  projectId: "stocksync-a83f5",
+  storageBucket: "stocksync-a83f5.firebasestorage.app",
+  messagingSenderId: "294692462434",
+  appId: "1:294692462434:web:49e357d2220bd45b65963b",
+  measurementId: "G-3NW8ZVECPF"
 };
 
 const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// ── Signup ─────────────────────────────────────
 export async function signup(email, password) {
   const res = await createUserWithEmailAndPassword(auth, email, password);
-
-  // Store both email (for display) and uid (for Firestore)
+  // Only store email for display — uid is handled by waitForUser() in data.js
   localStorage.setItem("user", res.user.email);
-  localStorage.setItem("uid",  res.user.uid);   // ← NEW
-
   window.location.href = "dashboard.html";
 }
 
-// ── Login ──────────────────────────────────────
 export async function login(email, password) {
   const res = await signInWithEmailAndPassword(auth, email, password);
-
+  // Only store email for display — uid is handled by waitForUser() in data.js
   localStorage.setItem("user", res.user.email);
-  localStorage.setItem("uid",  res.user.uid);   // ← NEW
-
   window.location.href = "dashboard.html";
 }
 
-// ── Logout ─────────────────────────────────────
 export async function logout() {
   await signOut(auth).catch(() => {});
-
-  // Clear both items we stored
   localStorage.removeItem("user");
-  localStorage.removeItem("uid");               // ← NEW
-
+  localStorage.removeItem("uid");
   window.location.href = "login.html";
 }
