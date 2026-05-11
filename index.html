@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Stock Sync – Smart Inhouse Grocery Inventory Management</title>
+<title>Stock Sync - Smart Inhouse Grocery Inventory Management</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- NAVIGATION -->
 <nav class="nav">
-  <a class="logo" href="#">
+  <a class="logo" href="index.html">
     <div class="logo-icon">SS</div>
     Stock Sync
   </a>
@@ -21,24 +20,22 @@
   </div>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
-  <div class="hero-badge">✦ Smart Inhouse Grocery Inventory Management</div>
+  <div class="hero-badge">Smart Inhouse Grocery Inventory Management</div>
   <h1>Stop wasting groceries.<br><span>Start syncing</span> your stock.</h1>
-  <p>Stock Sync helps households, shared flats, and families track groceries in real time — reduce waste, split expenses fairly, and never run out of essentials.</p>
+  <p>Stock Sync helps households, shared flats, and families track groceries in real time, reduce waste, split expenses fairly, and never run out of essentials.</p>
   <div class="hero-btns">
-    <button class="btn-primary" onclick="scrollToSection('app')">Try the app ↓</button>
+    <button class="btn-primary" onclick="window.location.href='login.html'">Get started</button>
     <button class="btn-outline" onclick="scrollToSection('features')">See features</button>
   </div>
   <div class="hero-stats">
-    <div class="stat"><div class="stat-num">3×</div><div class="stat-label">Less food wasted</div></div>
+    <div class="stat"><div class="stat-num">3x</div><div class="stat-label">Less food wasted</div></div>
     <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Expense transparency</div></div>
     <div class="stat"><div class="stat-num">Live</div><div class="stat-label">Shared inventory</div></div>
     <div class="stat"><div class="stat-num">All ages</div><div class="stat-label">Designed for everyone</div></div>
   </div>
 </section>
 
-<!-- FEATURES -->
 <section class="section" id="features" style="background:var(--bg-secondary)">
   <div class="section-inner">
     <div class="section-label">Features</div>
@@ -53,33 +50,32 @@
       <div class="feature-card">
         <div class="feature-icon" style="background:#FAEEDA">🔔</div>
         <h3>Expiry alerts</h3>
-        <p>Color-coded status: red = low stock, yellow = expiring, green = fresh. Never miss a spoil date.</p>
+        <p>Color-coded status: red for low stock, yellow for expiring, and green for fresh items.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background:#E6F1FB">💸</div>
         <h3>Expense splitting</h3>
-        <p>Track who paid for what and split grocery costs fairly among all members automatically.</p>
+        <p>Track who paid for what and split grocery costs fairly among all members.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background:#EEEDFE">🛒</div>
         <h3>Smart shopping list</h3>
-        <p>Auto-generated based on current stock and consumption patterns to avoid over-purchasing.</p>
+        <p>Use low-stock alerts to plan purchases and avoid buying what you already have.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background:#FBEAF0">🏷️</div>
-        <h3>Categories & tags</h3>
-        <p>Organize items by vegetables, dairy, grains, snacks — with quantity and unit tracking.</p>
+        <h3>Categories and tags</h3>
+        <p>Organize items by vegetables, dairy, grains, snacks, beverages, and more.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background:#E1F5EE">📊</div>
         <h3>Spending insights</h3>
-        <p>View daily, weekly, and monthly grocery spending summaries. Know where your money goes.</p>
+        <p>View daily, weekly, and total grocery spending summaries in one place.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- USER PERSONAS -->
 <section class="section" id="personas" style="background:var(--bg-primary)">
   <div class="section-inner">
     <div class="section-label">Who it's for</div>
@@ -114,21 +110,26 @@
   </div>
 </section>
 
-<!-- CTA -->
 <section class="section" style="background:var(--bg-primary);text-align:center;padding:4rem 2rem;">
   <div class="section-inner" style="max-width:520px">
     <div class="section-label">Ready to sync?</div>
     <h2 class="section-title">Your household's groceries, finally organised</h2>
-    <p class="section-sub" style="margin:0 auto 2rem">Log in or create a free account to access your personal inventory, expenses and alerts dashboard.</p>
-    <button class="btn-primary" style="font-size:15px;padding:12px 28px" onclick="window.location.href='login.html'">Login / Sign up →</button>
+    <p class="section-sub" style="margin:0 auto 2rem">Log in or create a free account to access your personal inventory, expenses, and alerts dashboard.</p>
+    <button class="btn-primary" style="font-size:15px;padding:12px 28px" onclick="window.location.href='login.html'">Login / Sign up</button>
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer>
-  <p><strong>Stock Sync</strong> — Smart Inhouse Grocery Inventory Management</p>
-  <p>Team 7 – Gigabytes &nbsp;·&nbsp; Gaurav Tripathi &nbsp;·&nbsp; Aditya Chetlangia &nbsp;·&nbsp; Saneha Shaw &nbsp;·&nbsp; Aditya Raj</p>
+  <p><strong>Stock Sync</strong> - Smart Inhouse Grocery Inventory Management</p>
+  <p>Team 7 - Gigabytes &nbsp;·&nbsp; Gaurav Tripathi &nbsp;·&nbsp; Aditya Chetlangia &nbsp;·&nbsp; Saneha Shaw &nbsp;·&nbsp; Aditya Raj</p>
   <p>Heritage Institute of Technology, Kolkata &nbsp;·&nbsp; 2026</p>
 </footer>
+
+<script>
+  function scrollToSection(id) {
+    const section = document.getElementById(id);
+    if (section) section.scrollIntoView({ behavior: 'smooth' });
+  }
+</script>
 </body>
 </html>
