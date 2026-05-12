@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard – Stock Sync</title>
 <link rel="stylesheet" href="style.css">
+<script src="theme.js" defer></script>
 <style>
   .live-dot {
     width: 7px; height: 7px; border-radius: 50%;
@@ -120,7 +121,7 @@
 
 <nav class="dash-nav">
   <a class="logo" href="index.html">
-    <div class="logo-icon">SS</div>
+    <img class="logo-icon" src="assets/logo.svg" alt="Stock Sync logo">
     Stock Sync
   </a>
   <div style="display:flex;align-items:center;gap:10px;">
@@ -136,6 +137,7 @@
       <div class="user-avatar" id="user-initial">?</div>
       <span id="dash-user-label">—</span>
     </div>
+    <button class="theme-toggle" data-theme-toggle onclick="toggleTheme()">Dark</button>
     <button class="btn-outline" style="font-size:13px;padding:6px 14px" onclick="doLogout()">Logout</button>
   </div>
 </nav>

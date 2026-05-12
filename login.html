@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Stock Sync – Login</title>
 <link rel="stylesheet" href="style.css">
+<script src="theme.js" defer></script>
 <style>
   /* ── decorative background orbs ── */
   .login-body::before,
@@ -61,9 +62,12 @@
 <body class="login-body">
 
 <div class="login-box">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+    <button class="theme-toggle" data-theme-toggle onclick="toggleTheme()">Dark</button>
+  </div>
 
   <div class="login-logo">
-    <div class="logo-icon">SS</div>
+    <img class="logo-icon" src="assets/logo.svg" alt="Stock Sync logo">
     Stock Sync
   </div>
   <div class="login-tagline">Your household's grocery command centre</div>

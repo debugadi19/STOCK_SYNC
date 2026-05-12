@@ -5,17 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Stock Sync - Smart Inhouse Grocery Inventory Management</title>
 <link rel="stylesheet" href="style.css">
+<script src="theme.js" defer></script>
 </head>
 <body>
 
 <nav class="nav">
   <a class="logo" href="index.html">
-    <div class="logo-icon">SS</div>
+    <img class="logo-icon" src="assets/logo.svg" alt="Stock Sync logo">
     Stock Sync
   </a>
   <div class="nav-links">
     <button class="nav-link" onclick="scrollToSection('features')">Features</button>
     <button class="nav-link" onclick="scrollToSection('personas')">Users</button>
+    <button class="theme-toggle" data-theme-toggle onclick="toggleTheme()">Dark</button>
     <button class="btn-primary" onclick="window.location.href='login.html'">Login</button>
   </div>
 </nav>

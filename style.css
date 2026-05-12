@@ -36,6 +36,32 @@
   --glass-blur:    blur(22px);
 }
 
+:root[data-theme="dark"] {
+  --bg-primary:    #151715;
+  --bg-secondary:  #20231f;
+  --bg-tertiary:   #0f110f;
+  --text-primary:  #f4f5ef;
+  --text-secondary:#c6c8bd;
+  --text-tertiary: #898d82;
+  --border:        rgba(255,255,255,0.09);
+  --border-md:     rgba(255,255,255,0.16);
+  --green:         #35c98d;
+  --green-dark:    #159262;
+  --green-light:   #17362a;
+  --green-glow:    rgba(53,201,141,0.18);
+  --green-text:    #b9f3d6;
+  --amber-light:   #3c2c0d;
+  --amber-text:    #f7d08a;
+  --red-light:     #3d1919;
+  --red-text:      #ffb4b4;
+  --blue-light:    #162b42;
+  --blue-text:     #b9d8ff;
+  --glass-bg:      rgba(21,23,21,0.78);
+  --shadow-sm:     0 1px 4px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.28);
+  --shadow-md:     0 8px 24px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.25);
+  --shadow-lg:     0 18px 54px rgba(0,0,0,0.45), 0 4px 14px rgba(0,0,0,0.28);
+}
+
 html { scroll-behavior: smooth; }
 
 body {
@@ -46,6 +72,20 @@ body {
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
+
+.theme-toggle {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-md);
+  border-radius: var(--radius-md);
+  padding: 7px 13px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s;
+}
+.theme-toggle:hover { background: var(--bg-secondary); box-shadow: var(--shadow-sm); }
 
 /* ─── SCROLLBAR ─────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -81,17 +121,11 @@ body {
 }
 
 .logo-icon {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
   box-shadow: var(--shadow-green);
 }
 
@@ -614,6 +648,9 @@ body {
   background: linear-gradient(160deg, #f0ede6 0%, #e8e5de 100%);
   min-height: 100vh;
 }
+:root[data-theme="dark"] .dash-body {
+  background: linear-gradient(160deg, #111511 0%, #181b17 100%);
+}
 
 .dash-nav {
   background: var(--glass-bg);
@@ -760,6 +797,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+:root[data-theme="dark"] .login-body {
+  background: linear-gradient(135deg, #10130f 0%, #181b16 50%, #13231d 100%);
 }
 
 .login-box {
