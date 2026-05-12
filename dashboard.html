@@ -362,6 +362,37 @@
     }
   };
 
+  window.editItemQty = async function (id) {
+    const item = inventory.find(i => i.id === id);
+    if (!item) return showToast("Item not found.", "error");
+
+    const input = prompt(`Add how much ${item.unit} to "${item.name}"?`, "1");
+    if (input === null) return;
+
+    const addQty = parseFloat(input);
+    if (isNaN(addQty) || addQty <= 0) {
+      return showToast("Please enter a positive quantity.", "error");
+    }
+
+    const newQty = Number(item.qty || 0) + addQty;
+    if (newQty > 9999) {
+      return showToast("Quantity seems too large. Please double-check.", "error");
+    }
+
+    const prev = inventory;
+    const updatedItem = { ...item, qty: Number(newQty.toFixed(2)) };
+    inventory = inventory.map(i => i.id === id ? updatedItem : i);
+
+    try {
+      await saveInventoryItem(updatedItem);
+      showToast(`Updated "${item.name}" to ${updatedItem.qty} ${item.unit} ✓`);
+    } catch(e) {
+      console.error("Edit inventory quantity failed:", e);
+      inventory = prev;
+      showToast(friendlyFirebaseError(e), "error");
+    }
+  };
+
   // ── FILTER & RENDER INVENTORY ───────────────
   window.applyFilters = function () {
     // Guard: if DOM elements don't exist yet, bail out silently
@@ -410,7 +441,12 @@
             <option value="low"      ${i.status === 'low'      ? 'selected' : ''}>🔴 Low Stock</option>
           </select>
         </td>
-        <td><button class="btn-danger" onclick="removeItem('${escAttr(i.id)}')">Remove</button></td>
+        <td>
+          <div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap;">
+            <button class="btn-outline" style="font-size:12px;padding:5px 10px;" onclick="editItemQty('${escAttr(i.id)}')">Edit qty</button>
+            <button class="btn-danger" onclick="removeItem('${escAttr(i.id)}')">Remove</button>
+          </div>
+        </td>
       </tr>`).join('');
   }
 
