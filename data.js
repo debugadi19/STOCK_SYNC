@@ -2,12 +2,6 @@
 // ─────────────────────────────────────────────
 // THE CORE SYNC FIX:
 //
-// OLD (broken): uid was read from localStorage.
-//   Problem — localStorage is per-device. On mobile,
-//   subscribeInventory() ran before Firebase Auth had
-//   restored the session, so getUID() returned null,
-//   the snapshot never started, and nothing loaded.
-//
 // NEW (fixed): uid comes from onAuthStateChanged.
 //   Firebase Auth fires this callback as soon as it
 //   confirms the user's session on ANY device — laptop,
