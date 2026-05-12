@@ -366,7 +366,7 @@
     const item = inventory.find(i => i.id === id);
     if (!item) return showToast("Item not found.", "error");
 
-    const input = prompt(`Add how much ${item.unit} to "${item.name}"?`, "1");
+    const input = prompt(`Enter new quantity for "${item.name}" (${item.unit})`,item.qty);
     if (input === null) return;
 
     const addQty = parseFloat(input);
