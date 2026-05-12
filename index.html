@@ -163,8 +163,6 @@
       border-radius: 40px;
       margin-bottom: 1.5rem;
       font-weight: 600;
-      letter-spacing: 0.2px;
-      backdrop-filter: blur(4px);
     }
 
     .hero h1 {
@@ -186,7 +184,6 @@
       color: var(--green);
       background: none;
       -webkit-background-clip: unset;
-      background-clip: unset;
       color: var(--green);
     }
 
@@ -195,14 +192,6 @@
       color: var(--text-secondary);
       max-width: 540px;
       margin: 0 auto 2rem;
-      line-height: 1.7;
-    }
-
-    .hero-btns {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
     }
 
     .hero-stats {
@@ -225,13 +214,6 @@
       font-size: 28px;
       font-weight: 700;
       color: var(--green);
-    }
-
-    .stat-label {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-      font-weight: 500;
     }
 
     .section {
@@ -263,14 +245,6 @@
       letter-spacing: -0.02em;
     }
 
-    .section-sub {
-      font-size: 16px;
-      color: var(--text-secondary);
-      line-height: 1.7;
-      max-width: 600px;
-      margin-bottom: 2rem;
-    }
-
     .features-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
@@ -289,26 +263,6 @@
 
     .feature-card:hover {
       transform: translateY(-4px);
-      box-shadow: var(--shadow-md);
-      border-color: rgba(29, 158, 117, 0.2);
-    }
-
-    .feature-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      margin-bottom: 16px;
-      background: var(--green-light);
-    }
-
-    .feature-card h3 {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 8px;
     }
 
     .personas-grid {
@@ -322,32 +276,13 @@
       background: var(--bg-primary);
       border-radius: var(--radius-lg);
       padding: 1.5rem;
-      transition: var(--transition);
       border: 0.5px solid var(--border);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .persona-card:hover {
-      transform: translateY(-3px);
-    }
-
-    .persona-avatar {
-      width: 56px;
-      height: 56px;
-      border-radius: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 16px;
     }
 
     .app-section {
       background: var(--bg-primary);
       padding: 5rem 2rem;
       border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-      margin-top: 1rem;
     }
 
     .app-tabs {
@@ -368,7 +303,6 @@
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-      font-family: inherit;
       transition: var(--transition);
     }
 
@@ -376,6 +310,51 @@
       background: var(--green);
       color: #fff;
       box-shadow: 0 2px 8px rgba(29, 158, 117, 0.3);
+    }
+
+    .settings-panel {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+      border: 0.5px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .settings-title {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .threshold-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: white;
+      padding: 5px 16px 5px 12px;
+      border-radius: 48px;
+      border: 0.5px solid var(--border-md);
+    }
+
+    .threshold-control label {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .threshold-control input {
+      width: 60px;
+      padding: 6px 8px;
+      border-radius: 40px;
+      border: 0.5px solid var(--border-md);
+      text-align: center;
+      font-family: inherit;
     }
 
     .inventory-table {
@@ -397,6 +376,39 @@
       padding: 12px 12px;
       border-bottom: 0.5px solid var(--border);
       vertical-align: middle;
+    }
+
+    .qty-stepper {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-secondary);
+      padding: 2px 8px;
+      border-radius: 40px;
+      border: 0.5px solid var(--border);
+    }
+
+    .qty-stepper button {
+      background: none;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 24px;
+      border-radius: 50%;
+      color: var(--green);
+      transition: 0.1s;
+    }
+
+    .qty-stepper button:hover {
+      background: var(--green-light);
+      transform: scale(1.05);
+    }
+
+    .qty-value {
+      min-width: 32px;
+      text-align: center;
+      font-weight: 500;
     }
 
     .status-badge {
@@ -432,13 +444,6 @@
       border: 0.5px solid var(--border);
     }
 
-    .form-label {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: var(--text-primary);
-    }
-
     .form-row {
       display: flex;
       gap: 12px;
@@ -457,13 +462,33 @@
       background: var(--bg-primary);
       font-family: inherit;
       outline: none;
-      transition: var(--transition);
     }
 
-    .form-row input:focus,
-    .form-row select:focus {
+    .form-row input:focus {
       border-color: var(--green);
-      box-shadow: 0 0 0 2px rgba(29, 158, 117, 0.2);
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+      text-align: center;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      color: var(--text-secondary);
+      gap: 12px;
+    }
+
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      opacity: 0.6;
+    }
+
+    .empty-state p {
+      font-size: 14px;
     }
 
     .summary-cards {
@@ -479,14 +504,6 @@
       padding: 1.25rem;
       text-align: center;
       border: 0.5px solid var(--border);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .summary-card .s-label {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-bottom: 6px;
-      font-weight: 500;
     }
 
     .summary-card .s-val {
@@ -502,24 +519,15 @@
       max-height: 320px;
       overflow-y: auto;
       margin-bottom: 1.5rem;
-      padding-right: 6px;
     }
 
     .expense-item {
       background: var(--bg-secondary);
-      border: 0.5px solid var(--border);
       border-radius: 18px;
       padding: 14px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      transition: var(--transition);
-    }
-
-    .expense-item:hover {
-      background: var(--bg-primary);
-      transform: translateX(4px);
     }
 
     .chart-section {
@@ -528,33 +536,6 @@
       border-radius: var(--radius-lg);
       padding: 1.5rem;
       margin-top: 1.5rem;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .chart-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .chart-toggle-btn {
-      padding: 5px 16px;
-      border-radius: 40px;
-      border: 1px solid var(--border-md);
-      background: var(--bg-secondary);
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-
-    .chart-toggle-btn.active {
-      background: var(--green);
-      color: #fff;
-      border-color: var(--green);
     }
 
     .bar-chart {
@@ -586,7 +567,6 @@
       border-radius: 12px 12px 4px 4px;
       transition: height 0.3s ease;
       cursor: pointer;
-      position: relative;
       min-height: 6px;
     }
 
@@ -610,31 +590,9 @@
       display: flex;
       gap: 14px;
       align-items: flex-start;
-      backdrop-filter: blur(2px);
       border-left: 4px solid;
       transition: var(--transition);
-    }
-
-    .alert-item:hover {
-      transform: scale(1.01);
-    }
-
-    @keyframes fadeSlideUp {
-      from {
-        opacity: 0;
-        transform: translateY(12px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .feature-card,
-    .persona-card,
-    .alert-item {
-      animation: fadeSlideUp 0.4s ease forwards;
+      background: var(--bg-secondary);
     }
 
     footer {
@@ -642,13 +600,6 @@
       color: #ccc;
       padding: 2.5rem;
       text-align: center;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    footer p {
-      font-size: 13px;
-      line-height: 1.6;
-      color: #aaa;
     }
 
     @media (max-width: 640px) {
@@ -656,12 +607,8 @@
         font-size: 36px;
       }
 
-      .section-title {
-        font-size: 26px;
-      }
-
-      .form-row {
-        flex-direction: column;
+      .qty-stepper {
+        padding: 2px 4px;
       }
     }
   </style>
@@ -686,10 +633,8 @@
     <h1>Stop wasting groceries.<br><span>Start syncing</span> your stock.</h1>
     <p>Stock Sync helps households, shared flats, and families track groceries in real time — reduce waste, split
       expenses fairly, and never run out of essentials.</p>
-    <div class="hero-btns">
-      <button class="btn-primary" onclick="scrollToSection('app')">Launch Demo →</button>
-      <button class="btn-outline" onclick="scrollToSection('features')">Explore features</button>
-    </div>
+    <div class="hero-btns"><button class="btn-primary" onclick="scrollToSection('app')">Launch Demo →</button><button
+        class="btn-outline" onclick="scrollToSection('features')">Explore features</button></div>
     <div class="hero-stats">
       <div class="stat">
         <div class="stat-num">3x</div>
@@ -710,66 +655,21 @@
     <div class="section-inner">
       <div class="section-label">⚡ Superpowers</div>
       <h2 class="section-title">Designed to make grocery management delightful</h2>
-      <p class="section-sub">Smart alerts, interactive dashboards, and real-time expense insights — everything your
-        household needs.</p>
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon">📦</div>
           <h3>Shared inventory</h3>
-          <p>Real-time updates across all members. Add or remove, everyone sees instantly.</p>
+          <p>Real-time updates + quick +/- steppers.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">🔔</div>
           <h3>Smart expiry radar</h3>
-          <p>🍃 Color-coded alerts & restock suggestions — never miss a spoil date.</p>
+          <p>Customizable low-stock alerts.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">💸</div>
           <h3>Fair expense split</h3>
-          <p>Auto-calculates per-person share, visualize category spending with bar/pie charts.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">📊</div>
-          <h3>Spending insights</h3>
-          <p>Dynamic charts (bar + pie) — track where money flows, weekly vs monthly trends.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🏷️</div>
-          <h3>Smart categories</h3>
-          <p>Dairy, veggies, grains, snacks — filter & organize like a pro.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🔄</div>
-          <h3>Live editing</h3>
-          <p>Edit items inline, change status instantly — frictionless UX.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="personas" style="background: var(--bg-primary)">
-    <div class="section-inner">
-      <div class="section-label">👥 Built for real people</div>
-      <h2 class="section-title">Trusted by modern households</h2>
-      <p class="section-sub">From students to homemakers, Stock Sync adapts to your lifestyle.</p>
-      <div class="personas-grid">
-        <div class="persona-card">
-          <div class="persona-avatar" style="background:#E6F1FB;color:#0C447C">RS</div>
-          <h3>Raj Sharma</h3>
-          <div class="role">Student, 20 · Shared flat</div><span class="status-badge" style="background:#EAF3DE">🔁
-            Auto-split</span>
-        </div>
-        <div class="persona-card">
-          <div class="persona-avatar" style="background:#EAF3DE;color:#3B6D11">GV</div>
-          <h3>Gaurav Verma</h3>
-          <div class="role">Dev, 27 · Shared apartment</div><span class="status-badge" style="background:#E6F1FB">📈
-            Analytics</span>
-        </div>
-        <div class="persona-card">
-          <div class="persona-avatar" style="background:#FBEAF0;color:#72243E">PS</div>
-          <h3>Priya Singh</h3>
-          <div class="role">Homemaker, 36 · Family</div><span class="status-badge" style="background:#FAEEDA">♻️ Reduce
-            waste</span>
+          <p>Dynamic bar/pie charts.</p>
         </div>
       </div>
     </div>
@@ -779,7 +679,18 @@
     <div class="section-inner">
       <div class="section-label">🧪 Live Prototype</div>
       <h2 class="section-title">Try Stock Sync now</h2>
-      <p class="section-sub">Add groceries, log expenses, see alerts and beautiful spending charts in action.</p>
+
+      <!-- NOTIFICATIONS / SETTINGS PANEL -->
+      <div class="settings-panel">
+        <div class="settings-title"><span>⚙️</span> Alert thresholds</div>
+        <div class="threshold-control"><label>📦 Low stock alert when qty ≤</label><input type="number"
+            id="lowStockThreshold" min="1" max="20" value="2" style="width:70px"><button class="btn-primary"
+            style="padding:5px 16px; background:#1D9E75;" onclick="updateThresholdAndAlerts()">Apply</button></div>
+        <div class="threshold-control"><label>⏰ Expiry notice (days before)</label><input type="number"
+            id="expiryLeadDays" min="1" max="10" value="3" style="width:70px"><button class="btn-primary"
+            style="padding:5px 16px; background:#1D9E75;" onclick="updateExpiryNotice()">Set</button></div>
+      </div>
+
       <div class="app-tabs">
         <button class="tab-btn active" onclick="showTab('inventory', this)">🥫 Inventory</button>
         <button class="tab-btn" onclick="showTab('expenses', this)">💰 Expenses & Charts</button>
@@ -789,38 +700,30 @@
       <div id="tab-inventory">
         <div class="add-form">
           <div class="form-label">➕ Add new grocery item</div>
-          <div class="form-row">
-            <input id="item-name" type="text" placeholder="e.g., Spinach, Milk" />
-            <input id="item-qty" type="number" placeholder="Qty" value="1" style="max-width:90px" />
-            <select id="item-cat">
+          <div class="form-row"><input id="item-name" placeholder="e.g., Spinach" /><input id="item-qty" type="number"
+              value="1" style="max-width:90px" /><select id="item-cat">
               <option>Dairy</option>
               <option>Vegetables</option>
               <option>Grains</option>
               <option>Snacks</option>
               <option>Other</option>
-            </select>
-            <select id="item-unit">
+            </select><select id="item-unit">
               <option value="kg">kg</option>
-              <option value="g">g</option>
-              <option value="l">L</option>
               <option value="pack">packs</option>
               <option value="pcs">pcs</option>
-            </select>
-            <select id="item-status">
+            </select><select id="item-status">
               <option value="fresh">Fresh ✅</option>
               <option value="expiring">Expiring ⚠️</option>
               <option value="low">Low stock 🚨</option>
-            </select>
-            <input id="item-date" type="date" style="min-width:130px" />
-            <button class="btn-primary" onclick="addItem()">✔️ Add item</button>
+            </select><input id="item-date" type="date" /><button class="btn-primary" onclick="addItem()">✔️ Add</button>
           </div>
         </div>
-        <div style="overflow-x:auto; border-radius: 20px;">
+        <div style="overflow-x:auto;">
           <table class="inventory-table">
             <thead>
               <tr>
                 <th>Item</th>
-                <th>Qty</th>
+                <th>Quantity</th>
                 <th>Category</th>
                 <th>Unit</th>
                 <th>Status</th>
@@ -843,29 +746,25 @@
             <div class="s-label">👥 Avg per person</div>
             <div class="s-val" id="per-person">₹0</div>
           </div>
-          <div class="summary-card">
-            <div class="s-label">📅 This month (est.)</div>
-            <div class="s-val" id="month-est">₹1,640</div>
-          </div>
         </div>
         <div class="add-form">
           <div class="form-label">📝 Log an expense</div>
-          <div class="form-row"><input id="exp-name" placeholder="Item description" /><input id="exp-amount"
-              type="number" placeholder="Amount ₹" /><select id="exp-cat">
-              <option value="Dairy">🥛 Dairy</option>
-              <option value="Vegetables">🥬 Vegetables</option>
-              <option value="Grains">🌾 Grains</option>
-              <option value="Snacks">🍿 Snacks</option>
-              <option value="Other">📦 Other</option>
-            </select><button class="btn-primary" onclick="addExpense()">+ Add expense</button></div>
+          <div class="form-row"><input id="exp-name" placeholder="Item" /><input id="exp-amount" type="number"
+              placeholder="₹" /><select id="exp-cat">
+              <option>Dairy</option>
+              <option>Vegetables</option>
+              <option>Grains</option>
+              <option>Snacks</option>
+              <option>Other</option>
+            </select><button class="btn-primary" onclick="addExpense()">+ Add</button></div>
         </div>
         <div class="expense-list" id="expense-list"></div>
         <div class="chart-section">
           <div class="chart-header">
             <div class="chart-title">📊 Spending by category</div>
             <div class="chart-toggle"><button class="chart-toggle-btn active" id="btn-bar"
-                onclick="switchChart('bar')">📊 Bar chart</button><button class="chart-toggle-btn" id="btn-pie"
-                onclick="switchChart('pie')">🥧 Pie chart</button></div>
+                onclick="switchChart('bar')">📊 Bar</button><button class="chart-toggle-btn" id="btn-pie"
+                onclick="switchChart('pie')">🥧 Pie</button></div>
           </div>
           <div class="chart-container" id="chart-container"></div>
         </div>
@@ -877,30 +776,88 @@
     </div>
   </section>
   <footer>
-    <p><strong>Stock Sync</strong> — Smart Inhouse Grocery Management</p>
-    <p>Team Gigabytes · Gaurav Tripathi · Aditya Chetlangia · Saneha Shaw · Aditya Raj · Heritage Institute of
-      Technology, Kolkata 2026</p>
+    <p><strong>Stock Sync</strong> — Gigabytes · Heritage Institute of Technology 2026</p>
   </footer>
 
   <script>
-    function scrollToSection(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
-    function setDefaultDate() { document.getElementById('item-date').value = new Date().toISOString().split('T')[0]; }
-    let inventory = [{ id: 1, name: 'Milk', qty: 2, unit: 'pack', cat: 'Dairy', status: 'expiring', date: '2026-04-17' }, { id: 2, name: 'Rice', qty: 5, unit: 'kg', cat: 'Grains', status: 'fresh', date: '2026-04-15' }, { id: 3, name: 'Tomatoes', qty: 500, unit: 'g', cat: 'Vegetables', status: 'low', date: '2026-04-18' }, { id: 4, name: 'Bread', qty: 1, unit: 'pack', cat: 'Other', status: 'fresh', date: '2026-04-19' }];
+    // ----- DATA -----
+    let inventory = [
+      { id: 1, name: 'Milk', qty: 2, unit: 'pack', cat: 'Dairy', status: 'expiring', date: '2026-04-17' },
+      { id: 2, name: 'Rice', qty: 5, unit: 'kg', cat: 'Grains', status: 'fresh', date: '2026-04-15' },
+      { id: 3, name: 'Tomatoes', qty: 500, unit: 'g', cat: 'Vegetables', status: 'low', date: '2026-04-18' },
+      { id: 4, name: 'Bread', qty: 1, unit: 'pack', cat: 'Other', status: 'fresh', date: '2026-04-19' }
+    ];
     let nextId = 5, editingId = null;
-    let expenses = [{ id: 1, name: 'Weekly groceries', amount: 840, member: 'Raj', cat: 'Grains' }, { id: 2, name: 'Milk & bread', amount: 120, member: 'Gaurav', cat: 'Dairy' }, { id: 3, name: 'Tomatoes & onions', amount: 200, member: 'Raj', cat: 'Vegetables' }, { id: 4, name: 'Chips & biscuits', amount: 180, member: 'You', cat: 'Snacks' }];
+    let expenses = [
+      { id: 1, name: 'Weekly groceries', amount: 840, member: 'Raj', cat: 'Grains' },
+      { id: 2, name: 'Milk & bread', amount: 120, member: 'Gaurav', cat: 'Dairy' },
+      { id: 3, name: 'Tomatoes & onions', amount: 200, member: 'Raj', cat: 'Vegetables' },
+      { id: 4, name: 'Chips & biscuits', amount: 180, member: 'You', cat: 'Snacks' }
+    ];
     let nextExpId = 5, currentChart = 'bar';
+    let lowStockThreshold = 2;
+    let expiryLeadDays = 3;
     const CAT_COLORS = { 'Dairy': '#378ADD', 'Vegetables': '#1D9E75', 'Grains': '#EF9F27', 'Snacks': '#C95CB4', 'Other': '#7B8FA1' };
 
-    function renderInventory() {
-      const tbody = document.getElementById('inventory-body');
-      if (!inventory.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem">✨ No items yet. Add your first grocery ✨</td></tr>'; return; }
-      tbody.innerHTML = inventory.map(item => editingId === item.id ? `<tr class="edit-row"><td><input class="inline-input" id="e-name" value="${item.name}" /></td><td><input id="e-qty" type="number" value="${item.qty}" style="width:70px" /></td><td><select id="e-cat">${['Dairy', 'Vegetables', 'Grains', 'Snacks', 'Other'].map(c => `<option${c === item.cat ? ' selected' : ''}>${c}</option>`).join('')}</select></td><td><select id="e-unit">${[['kg', 'kg'], ['g', 'g'], ['l', 'L'], ['pack', 'packs'], ['pcs', 'pcs']].map(([v, l]) => `<option value="${v}"${v === item.unit ? ' selected' : ''}>${l}</option>`).join('')}</select></td><td><select id="e-status"><option value="fresh"${item.status === 'fresh' ? ' selected' : ''}>Fresh ✅</option><option value="expiring"${item.status === 'expiring' ? ' selected' : ''}>Expiring ⚠️</option><option value="low"${item.status === 'low' ? ' selected' : ''}>Low 🚨</option></select></td><td><input id="e-date" type="date" value="${item.date || ''}" /></td><td><button class="btn-save" style="background:#1D9E75;color:white;border:none;padding:5px 12px;border-radius:40px;" onclick="saveEdit(${item.id})">Save</button> <button class="btn-cancel" onclick="cancelEdit()">Cancel</button></td></tr>` : `<tr><td style="font-weight:500">${item.name}</td><td>${item.qty}</td><td>${item.cat}</td><td>${item.unit}</td><td><span class="status-badge status-${item.status}">${item.status === 'fresh' ? 'Fresh ✅' : item.status === 'expiring' ? 'Expiring ⚠️' : 'Low stock 🚨'}</span></td><td>${item.date ? item.date.split('-').reverse().join('/') : '—'}</td><td><button class="action-btn edit" onclick="startEdit(${item.id})" style="background:none;border:none;color:#1D9E75;cursor:pointer;">✏️ Edit</button> <button onclick="removeItem(${item.id})" style="background:none;border:none;color:#E24B4A;cursor:pointer;">🗑️ Remove</button></td></tr>`).join('');
+    // Helpers
+    function scrollToSection(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
+    function setDefaultDate() { const el = document.getElementById('item-date'); if (el && !el.value) el.value = new Date().toISOString().split('T')[0]; }
+    function updateThresholdAndAlerts() { const input = document.getElementById('lowStockThreshold'); if (input) lowStockThreshold = parseInt(input.value) || 2; renderInventory(); renderAlerts(); }
+    function updateExpiryNotice() { const input = document.getElementById('expiryLeadDays'); if (input) expiryLeadDays = parseInt(input.value) || 3; renderAlerts(); }
+
+    // Helper: dynamic status based on qty + expiry (keeps existing but also overrides)
+    function deriveStatus(item) {
+      if (item.qty <= lowStockThreshold) return 'low';
+      if (item.date) { const today = new Date(); const expiry = new Date(item.date); expiry.setDate(expiry.getDate() + 7); const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24)); if (diffDays <= expiryLeadDays && diffDays >= 0) return 'expiring'; }
+      return 'fresh';
     }
+
+    // Update inventory statuses automatically based on threshold & expiry
+    function refreshAllStatuses() {
+      inventory = inventory.map(item => ({ ...item, status: deriveStatus(item) }));
+    }
+
+    // Quick quantity stepper
+    function adjustQty(id, delta) {
+      const idx = inventory.findIndex(i => i.id === id);
+      if (idx !== -1) {
+        let newQty = inventory[idx].qty + delta;
+        if (newQty < 0) newQty = 0;
+        inventory[idx].qty = newQty;
+        inventory[idx].status = deriveStatus(inventory[idx]);
+        renderInventory();
+        renderAlerts();
+      }
+    }
+
+    // Empty state illustration component
+    function emptyStateSVG(type, message) {
+      return `<div class="empty-state"><svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M40 10L10 25v30l30 15 30-15V25L40 10z" stroke="#ccc" stroke-width="1.5" fill="#f0f0f0"/><circle cx="40" cy="40" r="8" fill="#ddd"/><path d="M28 28l24 24M52 28L28 52" stroke="#ccc" stroke-width="1.5"/></svg><p>${message}</p><button class="btn-outline" onclick="scrollToSection('app')">➕ Add your first item</button></div>`;
+    }
+
+    // ---- RENDER INVENTORY (with steppers & inline qty edit) ----
+    function renderInventory() {
+      refreshAllStatuses();
+      const tbody = document.getElementById('inventory-body');
+      if (!inventory.length) { tbody.innerHTML = emptyStateSVG('empty', 'No groceries yet. Add your first item above!'); return; }
+      tbody.innerHTML = inventory.map(item => {
+        if (editingId === item.id) {
+          return `<tr class="edit-row"><td><input id="e-name" value="${item.name}" style="padding:5px;border-radius:20px;" /></td><td><input id="e-qty" type="number" value="${item.qty}" style="width:70px" /></td><td><select id="e-cat">${['Dairy', 'Vegetables', 'Grains', 'Snacks', 'Other'].map(c => `<option${c === item.cat ? ' selected' : ''}>${c}</option>`).join('')}</select></td><td><select id="e-unit">${[['kg', 'kg'], ['pack', 'packs'], ['pcs', 'pcs']].map(([v, l]) => `<option${v === item.unit ? ' selected' : ''}>${l}</option>`).join('')}</select></td><td><select id="e-status"><option value="fresh"${item.status === 'fresh' ? ' selected' : ''}>Fresh</option><option value="expiring"${item.status === 'expiring' ? ' selected' : ''}>Expiring</option><option value="low"${item.status === 'low' ? ' selected' : ''}>Low</option></select></td><td><input id="e-date" type="date" value="${item.date || ''}" /></td><td><button class="btn-primary" style="padding:5px 12px;" onclick="saveEdit(${item.id})">Save</button> <button class="btn-outline" onclick="cancelEdit()">Cancel</button></td></tr>`;
+        }
+        return `<tr><td style="font-weight:500">${item.name}</td><td><div class="qty-stepper"><button onclick="adjustQty(${item.id}, -1)">−</button><span class="qty-value">${item.qty}</span><button onclick="adjustQty(${item.id}, 1)">+</button></div></td><td>${item.cat}</td><td>${item.unit}</td><td><span class="status-badge status-${item.status}">${item.status === 'fresh' ? 'Fresh ✅' : item.status === 'expiring' ? 'Expiring ⚠️' : 'Low stock 🚨'}</span></td><td>${item.date ? item.date.split('-').reverse().join('/') : '—'}</td><td><button class="action-btn edit" onclick="startEdit(${item.id})" style="background:none;border:none;color:#1D9E75;cursor:pointer;">✏️ Edit</button> <button onclick="removeItem(${item.id})" style="background:none;border:none;color:#E24B4A;cursor:pointer;">🗑️ Remove</button></td></tr>`;
+      }).join('');
+    }
+
     function startEdit(id) { editingId = id; renderInventory(); }
     function cancelEdit() { editingId = null; renderInventory(); }
-    function saveEdit(id) { const name = document.getElementById('e-name').value.trim(); if (!name) return; const qty = parseInt(document.getElementById('e-qty').value) || 1; const cat = document.getElementById('e-cat').value; const unit = document.getElementById('e-unit').value; const status = document.getElementById('e-status').value; const date = document.getElementById('e-date').value; inventory = inventory.map(i => i.id === id ? { ...i, name, qty, cat, unit, status, date } : i); editingId = null; renderInventory(); renderAlerts(); }
-    function addItem() { const name = document.getElementById('item-name').value.trim(); if (!name) { alert("Add an item name"); return; } const qty = parseInt(document.getElementById('item-qty').value) || 1; const unit = document.getElementById('item-unit').value; const cat = document.getElementById('item-cat').value; const status = document.getElementById('item-status').value; const date = document.getElementById('item-date').value || new Date().toISOString().split('T')[0]; inventory.push({ id: nextId++, name, qty, unit, cat, status, date }); document.getElementById('item-name').value = ''; renderInventory(); renderAlerts(); }
+    function saveEdit(id) { const name = document.getElementById('e-name')?.value.trim(); if (!name) return; const qty = parseInt(document.getElementById('e-qty')?.value) || 1; const cat = document.getElementById('e-cat')?.value; const unit = document.getElementById('e-unit')?.value; const status = document.getElementById('e-status')?.value; const date = document.getElementById('e-date')?.value; inventory = inventory.map(i => i.id === id ? { ...i, name, qty, cat, unit, status, date } : i); editingId = null; renderInventory(); renderAlerts(); }
+    function addItem() { const name = document.getElementById('item-name').value.trim(); if (!name) { alert("Enter item name"); return; } const qty = parseInt(document.getElementById('item-qty').value) || 1; const unit = document.getElementById('item-unit').value; const cat = document.getElementById('item-cat').value; const status = document.getElementById('item-status').value; let date = document.getElementById('item-date').value; if (!date) date = new Date().toISOString().split('T')[0]; inventory.push({ id: nextId++, name, qty, unit, cat, status, date }); document.getElementById('item-name').value = ''; renderInventory(); renderAlerts(); }
     function removeItem(id) { inventory = inventory.filter(i => i.id !== id); if (editingId === id) editingId = null; renderInventory(); renderAlerts(); }
+
+    // Expenses & charts
     function getCategoryTotals() { const t = {}; expenses.forEach(e => { const c = e.cat || 'Other'; t[c] = (t[c] || 0) + e.amount; }); return t; }
-    function renderBarChart(totals) { const entries = Object.entries(totals); if (!entries.length) return '<div class="chart-empty">📭 No expenses yet. Add one to see chart.</div>'; const max = Math.max(...entries.map(([, v]) => v)) || 1, yMax = Math.ceil(max / 100) * 100; const bars = entries.map(([cat, amt]) => { const pct = (amt / yMax) * 100; return `<div class="bar-group"><div class="bar-wrap"><div class="bar" style="height:${Math.max(pct, 4)}%;background:${CAT_COLORS[cat] || '#7B8FA1'};border-radius:8px 8px 4px 4px;"><div class="bar-tooltip" style="display:none;position:absolute;background:#1a1a1a;color:white;padding:2px 8px;border-radius:20px;font-size:11px;top:-28px;">₹${amt}</div></div></div><div class="bar-label">${cat}</div><div class="bar-amount">₹${amt >= 1000 ? (amt / 1000).toFixed(1) + 'k' : amt}</div></div>`; }).join(''); return `<div style="position:relative;padding-left:30px"><div class="bar-chart">${bars}</div></div>`; }
-    function renderPieChart(totals) { const entries = Object.entries(totals); if (!entries.length) return '<div class="chart-empty">📭 No expenses yet. Add one to see pie chart.</div>'; const total = entries.reduce((s, [, v]) => s + v, 0); const size = 180, cx = size / 2, cy = size / 2, r = size / 2 - 10; let start = -Math.PI / 2; const slices = entries.map(([cat, amt]) => { const angle = (amt / total) * 2 * Math.PI; const end = start + angle; const x1 = cx + r * Math.cos(start), y1 = cy + r * Math.sin(start), x2 = cx + r * Math.cos(end), y2 = cy + r * Math.sin(end); const large = angle > Math.PI ? 1 : 0; const path = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`; const color = CAT_COLORS[cat] || '#7B8FA1'; const pct = Math.round((amt / total) * 100); start = end; return { cat, amt, color, path, pct }; }); const svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${slices.map(s => `<path
+    function renderBarChart(totals) { const entries = Object.entries(totals); if (!entries.length) return '<div class="empty-state">📭 No expenses logged yet. Add an expense above.</div>'; const max = Math.max(...entries.map(([, v]) => v)) || 1, yMax = Math.ceil(max / 100) * 100; const bars = entries.map(([cat, amt]) => { const pct = (amt / yMax) * 100; return `<div class="bar-group"><div class="bar-wrap"><div class="bar" style="height:${Math.max(pct, 4)}%;background:${CAT_COLORS[cat] || '#7B8FA1'};"><div class="bar-tooltip" style="display:none;">₹${amt}</div></div></div><div class="bar-label">${cat}</div><div class="bar-amount">₹${amt >= 1000 ? (amt / 1000).toFixed(1) + 'k' : amt}</div></div>`; }).join(''); return `<div style="padding-left:30px"><div class="bar-chart">${bars}</div></div>`; }
+    function renderPieChart(totals) { const entries = Object.entries(totals); if (!entries.length) return '<div class="empty-state">📭 No expenses yet. Add one to see pie chart.</div>'; const total = entries.reduce((s, [, v]) => s + v, 0); const size = 180; let start = -Math.PI / 2; const slices = entries.map(([cat, amt]) => { const angle = (amt / total) * 2 * Math.PI; const end = start + angle; const x1 = 90 + 80 * Math.cos(start), y1 = 90 + 80 * Math.sin(start), x2 = 90 + 80 * Math.cos(end), y2 = 90 + 80 * Math.sin(end); const large = angle > Math.PI ? 1 : 0; const path = `M90,90 L${x1},${y1} A80,80 0 ${large},1 ${x2},${y2} Z`; const color = CAT_COLORS[cat] || '#7B8FA1'; const pct = Math.round((amt / total) * 100); start = end; return { cat, amt, color, path, pct }; }); const svg = `<svg width="180" height="180" viewBox="0 0 180 180">${slices.map(s => `<path d="${s.path}" fill="${s.color}" stroke="#fff" stroke-width="2"/>`).join('')}</svg>`; const legend = slices.map(s => `<div><div style="background:${s.color};width:12px;height:12px;display:inline-block;border-radius:50%;margin-right:8px;"></div>${s.cat}: ₹${s.amt} (${s.pct}%)</div>`).join(''); return `<div class="pie-chart-wrap"><div>${svg}</div><div>${legend}</div></div>`; }
+    function renderChart() { const totals = getCategoryTotals(); const container = document.getElementById('chart-container'); if (!container) return; container.innerHTML = currentChart === 'bar' ? renderBarChart(totals) : renderPieChart(totals); }
+    function switchChart(type) { currentChart = type; document.getElementById('btn-bar').classList.toggle('active', type === 'bar'); document.getElementById('btn-pie').classList.toggle('active', type === 'pie'); renderChart(); }
+    function renderExpenses() { const total = expenses.reduce((s, e) => s + e.amount, 0); document.getElementById('total-spent').innerHTML = '₹' + total.toLocaleString('en-IN');
