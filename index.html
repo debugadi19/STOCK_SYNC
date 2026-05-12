@@ -1,647 +1,906 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Stock Sync – Smart Inhouse Grocery Inventory Management</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg-primary: #ffffff; --bg-secondary: #f5f5f3; --bg-tertiary: #eeede9;
-    --text-primary: #1a1a1a; --text-secondary: #6b6b6b;
-    --border: rgba(0,0,0,0.12); --border-md: rgba(0,0,0,0.2);
-    --green: #1D9E75; --green-dark: #0F6E56; --green-light: #EAF3DE; --green-text: #3B6D11;
-    --radius-md: 8px; --radius-lg: 12px;
-  }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text-primary); background: var(--bg-tertiary); font-size: 16px; line-height: 1.7; }
-  .nav { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
-  .logo { font-size: 18px; font-weight: 500; display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text-primary); }
-  .logo-icon { width: 28px; height: 28px; background: var(--green); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; }
-  .nav-links { display: flex; gap: 1.5rem; align-items: center; }
-  .nav-link { font-size: 14px; color: var(--text-secondary); cursor: pointer; background: none; border: none; font-family: inherit; }
-  .nav-link:hover { color: var(--text-primary); }
-  .btn-primary { background: var(--green); color: #fff; border: none; border-radius: var(--radius-md); padding: 8px 18px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
-  .btn-primary:hover { background: var(--green-dark); }
-  .btn-outline { background: var(--bg-primary); color: var(--text-primary); border: 0.5px solid var(--border-md); border-radius: var(--radius-md); padding: 8px 18px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
-  .btn-outline:hover { background: var(--bg-secondary); }
-  .hero { padding: 5rem 2rem 4rem; text-align: center; background: var(--bg-primary); }
-  .hero-badge { display: inline-block; background: var(--green-light); color: var(--green-text); font-size: 12px; padding: 4px 14px; border-radius: 20px; margin-bottom: 1.5rem; font-weight: 500; }
-  .hero h1 { font-size: 42px; font-weight: 500; line-height: 1.2; margin-bottom: 1rem; max-width: 560px; margin-left: auto; margin-right: auto; }
-  .hero h1 span { color: var(--green); }
-  .hero p { font-size: 16px; color: var(--text-secondary); max-width: 480px; margin: 0 auto 2rem; line-height: 1.7; }
-  .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-  .hero-stats { display: flex; justify-content: center; gap: 3rem; margin-top: 3.5rem; flex-wrap: wrap; }
-  .stat { text-align: center; }
-  .stat-num { font-size: 24px; font-weight: 500; color: var(--green); }
-  .stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
-  .section { padding: 4rem 2rem; }
-  .section-inner { max-width: 960px; margin: 0 auto; }
-  .section-label { font-size: 12px; font-weight: 500; color: var(--green); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .5rem; }
-  .section-title { font-size: 28px; font-weight: 500; margin-bottom: .75rem; }
-  .section-sub { font-size: 15px; color: var(--text-secondary); line-height: 1.7; max-width: 560px; }
-  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 2.5rem; }
-  .feature-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
-  .feature-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 12px; }
-  .feature-card h3 { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
-  .feature-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
-  .personas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 2.5rem; }
-  .persona-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
-  .persona-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; margin-bottom: 12px; }
-  .persona-card h3 { font-size: 14px; font-weight: 500; }
-  .persona-card .role { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
-  .persona-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; margin: 2px 2px 0 0; }
-  .app-section { background: var(--bg-primary); padding: 4rem 2rem; }
-  .app-tabs { display: flex; gap: 8px; margin-bottom: 2rem; flex-wrap: wrap; }
-  .tab-btn { padding: 8px 16px; border-radius: var(--radius-md); border: 0.5px solid var(--border); background: var(--bg-secondary); color: var(--text-secondary); font-size: 13px; cursor: pointer; font-family: inherit; }
-  .tab-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
-  .inventory-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .inventory-table th { text-align: left; padding: 8px 12px; color: var(--text-secondary); font-weight: 500; border-bottom: 0.5px solid var(--border); white-space: nowrap; }
-  .inventory-table td { padding: 8px 12px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
-  .status-badge { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 500; }
-  .status-fresh    { background: #EAF3DE; color: #3B6D11; }
-  .status-expiring { background: #FAEEDA; color: #633806; }
-  .status-low      { background: #FCEBEB; color: #501313; }
-  .add-form { background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; }
-  .form-label { font-size: 13px; font-weight: 500; margin-bottom: 10px; }
-  .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
-  .form-row input, .form-row select { flex: 1; min-width: 110px; padding: 8px 10px; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); font-size: 13px; background: var(--bg-primary); color: var(--text-primary); font-family: inherit; outline: none; }
-  .form-row input:focus, .form-row select:focus { border-color: var(--green); }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Stock Sync – Smart Inhouse Grocery Inventory Management</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  .edit-row td { background: #f0faf5; }
-  .inline-input { width: 100%; padding: 5px 7px; border: 0.5px solid var(--green); border-radius: 6px; font-size: 12px; font-family: inherit; background: #fff; color: var(--text-primary); outline: none; }
-  .inline-select { width: 100%; padding: 5px 4px; border: 0.5px solid var(--green); border-radius: 6px; font-size: 12px; font-family: inherit; background: #fff; color: var(--text-primary); outline: none; }
-  .btn-save   { background: var(--green); color: #fff; border: none; border-radius: 6px; padding: 5px 12px; font-size: 12px; cursor: pointer; font-family: inherit; white-space: nowrap; }
-  .btn-save:hover { background: var(--green-dark); }
-  .btn-cancel { background: none; border: 0.5px solid var(--border-md); border-radius: 6px; padding: 5px 10px; font-size: 12px; cursor: pointer; font-family: inherit; color: var(--text-secondary); white-space: nowrap; }
-  .btn-cancel:hover { background: var(--bg-secondary); }
-  .action-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 12px; font-family: inherit; padding: 2px 6px; border-radius: 4px; }
-  .action-btn:hover { color: var(--text-primary); background: var(--bg-secondary); }
-  .action-btn.edit { color: #1D6EBF; }
-  .action-btn.edit:hover { background: #E6F1FB; }
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f3;
+      --bg-tertiary: #eeede9;
+      --text-primary: #1a1a1a;
+      --text-secondary: #6b6b6b;
+      --border: rgba(0, 0, 0, 0.12);
+      --border-md: rgba(0, 0, 0, 0.2);
+      --green: #1D9E75;
+      --green-dark: #0F6E56;
+      --green-light: #EAF3DE;
+      --green-text: #3B6D11;
+      --amber: #EF9F27;
+      --coral: #E24B4A;
+      --blue: #378ADD;
+      --radius-md: 8px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.03);
+      --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.05);
+      --transition: all 0.2s ease;
+    }
 
-  .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
-  .summary-card { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 1rem; text-align: center; }
-  .summary-card .s-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
-  .summary-card .s-val { font-size: 22px; font-weight: 500; color: var(--green); }
-  .expense-list { display: flex; flex-direction: column; gap: 10px; }
-  .expense-item { background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-  .expense-name { font-size: 14px; font-weight: 500; }
-  .expense-meta { font-size: 12px; color: var(--text-secondary); }
-  .expense-amount { font-size: 15px; font-weight: 500; color: var(--green); }
-  .alert-list { display: flex; flex-direction: column; gap: 8px; }
-  .alert-item { border-radius: var(--radius-md); padding: 10px 14px; display: flex; gap: 10px; align-items: flex-start; }
-  .alert-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
-  .alert-title { font-size: 13px; font-weight: 500; }
-  .alert-sub { font-size: 12px; color: var(--text-secondary); }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  /* ── CHART STYLES ── */
-  .chart-section { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-top: 1.5rem; }
-  .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 8px; }
-  .chart-title { font-size: 14px; font-weight: 500; }
-  .chart-toggle { display: flex; gap: 6px; }
-  .chart-toggle-btn { padding: 5px 12px; border-radius: 6px; border: 0.5px solid var(--border-md); background: var(--bg-secondary); color: var(--text-secondary); font-size: 12px; cursor: pointer; font-family: inherit; }
-  .chart-toggle-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
-  .chart-container { position: relative; }
+    .nav {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 0.5px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
 
-  /* Bar chart */
-  .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 180px; padding: 0 4px; }
-  .bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 6px; min-width: 40px; }
-  .bar-wrap { width: 100%; display: flex; align-items: flex-end; justify-content: center; height: 150px; }
-  .bar { width: 70%; border-radius: 4px 4px 0 0; transition: opacity 0.15s; cursor: default; position: relative; min-height: 4px; }
-  .bar:hover { opacity: 0.8; }
-  .bar-label { font-size: 11px; color: var(--text-secondary); text-align: center; white-space: nowrap; }
-  .bar-amount { font-size: 11px; font-weight: 500; color: var(--text-primary); text-align: center; }
-  .bar-tooltip { display: none; position: absolute; top: -34px; left: 50%; transform: translateX(-50%); background: var(--text-primary); color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 5px; white-space: nowrap; pointer-events: none; z-index: 10; }
-  .bar:hover .bar-tooltip { display: block; }
-  .bar-y-labels { position: absolute; left: 0; top: 0; height: 150px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
-  .bar-y-labels span { font-size: 10px; color: var(--text-secondary); }
-  .bar-grid { position: absolute; left: 0; right: 0; top: 0; height: 150px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
-  .bar-grid-line { border-top: 0.5px dashed var(--border); width: 100%; }
+    .logo {
+      font-size: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
 
-  /* Pie chart */
-  .pie-chart-wrap { display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
-  .pie-svg-wrap { flex-shrink: 0; }
-  .pie-legend { display: flex; flex-direction: column; gap: 8px; }
-  .pie-legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-  .pie-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .pie-legend-label { color: var(--text-secondary); }
-  .pie-legend-amount { font-weight: 500; margin-left: auto; padding-left: 12px; }
-  .pie-legend-pct { font-size: 11px; color: var(--text-secondary); }
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--green);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(29, 158, 117, 0.2);
+    }
 
-  /* No data */
-  .chart-empty { text-align: center; color: var(--text-secondary); font-size: 13px; padding: 2rem 0; }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
 
-  footer { background: var(--bg-primary); border-top: 0.5px solid var(--border); padding: 2rem; text-align: center; }
-  footer p { font-size: 13px; color: var(--text-secondary); line-height: 1.8; }
-  @media (max-width: 600px) {
-    .hero h1 { font-size: 28px; }
-    .hero-stats { gap: 1.5rem; }
-    .nav-links .btn-outline { display: none; }
-    .bar-chart { gap: 5px; }
-  }
-</style>
+    .nav-link {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      transition: var(--transition);
+    }
+
+    .nav-link:hover {
+      color: var(--green);
+    }
+
+    .btn-primary {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 40px;
+      padding: 8px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: var(--transition);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-primary:hover {
+      background: var(--green-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(29, 158, 117, 0.25);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border-md);
+      border-radius: 40px;
+      padding: 8px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: var(--transition);
+    }
+
+    .btn-outline:hover {
+      background: var(--bg-secondary);
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .hero {
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+      background: linear-gradient(135deg, #fff 0%, #fafaf8 100%);
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--green-light);
+      color: var(--green-text);
+      font-size: 12px;
+      padding: 5px 16px;
+      border-radius: 40px;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      backdrop-filter: blur(4px);
+    }
+
+    .hero h1 {
+      font-size: 52px;
+      font-weight: 620;
+      line-height: 1.15;
+      margin-bottom: 1.2rem;
+      max-width: 660px;
+      margin-left: auto;
+      margin-right: auto;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2c3e2f 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero h1 span {
+      color: var(--green);
+      background: none;
+      -webkit-background-clip: unset;
+      background-clip: unset;
+      color: var(--green);
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 540px;
+      margin: 0 auto 2rem;
+      line-height: 1.7;
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3.5rem;
+      margin-top: 4rem;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(4px);
+      padding: 0.5rem 1rem;
+      border-radius: 48px;
+    }
+
+    .stat-num {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .section {
+      padding: 5rem 2rem;
+    }
+
+    .section-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      margin-bottom: 0.75rem;
+      display: inline-block;
+      background: var(--green-light);
+      padding: 3px 12px;
+      border-radius: 30px;
+    }
+
+    .section-title {
+      font-size: 34px;
+      font-weight: 620;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .section-sub {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 600px;
+      margin-bottom: 2rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 24px;
+      margin-top: 2rem;
+    }
+
+    .feature-card {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: rgba(29, 158, 117, 0.2);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+      background: var(--green-light);
+    }
+
+    .feature-card h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .personas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      margin-top: 2rem;
+    }
+
+    .persona-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      transition: var(--transition);
+      border: 0.5px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .persona-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .persona-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .app-section {
+      background: var(--bg-primary);
+      padding: 5rem 2rem;
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      margin-top: 1rem;
+    }
+
+    .app-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+
+    .tab-btn {
+      padding: 10px 24px;
+      border-radius: 40px;
+      border: none;
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: var(--transition);
+    }
+
+    .tab-btn.active {
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(29, 158, 117, 0.3);
+    }
+
+    .inventory-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .inventory-table th {
+      text-align: left;
+      padding: 12px 12px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      background: rgba(245, 245, 243, 0.5);
+    }
+
+    .inventory-table td {
+      padding: 12px 12px;
+      border-bottom: 0.5px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 40px;
+      font-weight: 500;
+    }
+
+    .status-fresh {
+      background: #EAF3DE;
+      color: #3B6D11;
+    }
+
+    .status-expiring {
+      background: #FAEEDA;
+      color: #B45309;
+    }
+
+    .status-low {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
+
+    .add-form {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.8rem;
+      border: 0.5px solid var(--border);
+    }
+
+    .form-label {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .form-row input,
+    .form-row select {
+      flex: 1;
+      min-width: 110px;
+      padding: 10px 12px;
+      border: 1px solid var(--border-md);
+      border-radius: 40px;
+      font-size: 14px;
+      background: var(--bg-primary);
+      font-family: inherit;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .form-row input:focus,
+    .form-row select:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 2px rgba(29, 158, 117, 0.2);
+    }
+
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 2rem;
+    }
+
+    .summary-card {
+      background: linear-gradient(125deg, #fff 0%, #fafaf8 100%);
+      border-radius: 20px;
+      padding: 1.25rem;
+      text-align: center;
+      border: 0.5px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .summary-card .s-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .summary-card .s-val {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .expense-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 320px;
+      overflow-y: auto;
+      margin-bottom: 1.5rem;
+      padding-right: 6px;
+    }
+
+    .expense-item {
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      transition: var(--transition);
+    }
+
+    .expense-item:hover {
+      background: var(--bg-primary);
+      transform: translateX(4px);
+    }
+
+    .chart-section {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .chart-toggle-btn {
+      padding: 5px 16px;
+      border-radius: 40px;
+      border: 1px solid var(--border-md);
+      background: var(--bg-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .chart-toggle-btn.active {
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+    }
+
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 20px;
+      height: 200px;
+      padding: 0 8px;
+    }
+
+    .bar-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bar-wrap {
+      width: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      height: 150px;
+    }
+
+    .bar {
+      width: 55%;
+      border-radius: 12px 12px 4px 4px;
+      transition: height 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      min-height: 6px;
+    }
+
+    .pie-chart-wrap {
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .alert-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .alert-item {
+      border-radius: 20px;
+      padding: 16px 18px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      backdrop-filter: blur(2px);
+      border-left: 4px solid;
+      transition: var(--transition);
+    }
+
+    .alert-item:hover {
+      transform: scale(1.01);
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .feature-card,
+    .persona-card,
+    .alert-item {
+      animation: fadeSlideUp 0.4s ease forwards;
+    }
+
+    footer {
+      background: #1a1a1a;
+      color: #ccc;
+      padding: 2.5rem;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    footer p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: #aaa;
+    }
+
+    @media (max-width: 640px) {
+      .hero h1 {
+        font-size: 36px;
+      }
+
+      .section-title {
+        font-size: 26px;
+      }
+
+      .form-row {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- NAVIGATION -->
-<nav class="nav">
-  <a class="logo" href="#"><div class="logo-icon">SS</div>Stock Sync</a>
-  <div class="nav-links">
-    <button class="nav-link" onclick="scrollToSection('features')">Features</button>
-    <button class="nav-link" onclick="scrollToSection('personas')">Users</button>
-    <button class="nav-link" onclick="scrollToSection('app')">Try App</button>
-    <button class="btn-primary" onclick="scrollToSection('app')">Get started</button>
-  </div>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-badge">Smart Inhouse Grocery Inventory Management</div>
-  <h1>Stop wasting groceries.<br><span>Start syncing</span> your stock.</h1>
-  <p>Stock Sync helps households, shared flats, and families track groceries in real time — reduce waste, split expenses fairly, and never run out of essentials.</p>
-  <div class="hero-btns">
-    <button class="btn-primary" onclick="scrollToSection('app')">Try the app ↓</button>
-    <button class="btn-outline" onclick="scrollToSection('features')">See features</button>
-  </div>
-  <div class="hero-stats">
-    <div class="stat"><div class="stat-num">3x</div><div class="stat-label">Less food wasted</div></div>
-    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Expense transparency</div></div>
-    <div class="stat"><div class="stat-num">Real-time</div><div class="stat-label">Shared inventory</div></div>
-    <div class="stat"><div class="stat-num">All ages</div><div class="stat-label">Designed for everyone</div></div>
-  </div>
-</section>
-
-<!-- FEATURES -->
-<section class="section" id="features">
-  <div class="section-inner">
-    <div class="section-label">Features</div>
-    <h2 class="section-title">Everything your household needs</h2>
-    <p class="section-sub">Built around real pain points discovered through user research with students, working professionals, and homemakers.</p>
-    <div class="features-grid">
-      <div class="feature-card"><div class="feature-icon" style="background:#EAF3DE">📦</div><h3>Shared inventory</h3><p>One centralized grocery list accessible by all household members with real-time updates.</p></div>
-      <div class="feature-card"><div class="feature-icon" style="background:#FAEEDA">🔔</div><h3>Expiry alerts</h3><p>Color-coded status: red = expiring, yellow = frequently bought, green = fresh. Never miss a spoil date.</p></div>
-      <div class="feature-card"><div class="feature-icon" style="background:#E6F1FB">💸</div><h3>Expense splitting</h3><p>Track who paid for what and split grocery costs fairly among all members automatically.</p></div>
-      <div class="feature-card"><div class="feature-icon" style="background:#EEEDFE">🛒</div><h3>Smart shopping list</h3><p>Auto-generated based on current stock and consumption patterns to avoid over-purchasing.</p></div>
-      <div class="feature-card"><div class="feature-icon" style="background:#FBEAF0">🏷️</div><h3>Categories & tags</h3><p>Organize items by vegetables, dairy, grains, snacks — with quantity and unit tracking.</p></div>
-      <div class="feature-card"><div class="feature-icon" style="background:#E1F5EE">📊</div><h3>Spending insights</h3><p>View daily, weekly, and monthly grocery spending summaries. Know where your money goes.</p></div>
+  <nav class="nav">
+    <a class="logo" href="#">
+      <div class="logo-icon">⤨</div>Stock Sync
+    </a>
+    <div class="nav-links">
+      <button class="nav-link" onclick="scrollToSection('features')">Features</button>
+      <button class="nav-link" onclick="scrollToSection('personas')">Community</button>
+      <button class="nav-link" onclick="scrollToSection('app')">Live Demo</button>
+      <button class="btn-primary" onclick="scrollToSection('app')">Start free →</button>
     </div>
-  </div>
-</section>
+  </nav>
 
-<!-- USER PERSONAS -->
-<section class="section" id="personas" style="background: var(--bg-primary)">
-  <div class="section-inner">
-    <div class="section-label">Who it's for</div>
-    <h2 class="section-title">Designed for real users</h2>
-    <p class="section-sub">Three key personas shaped every feature decision in Stock Sync.</p>
-    <div class="personas-grid">
-      <div class="persona-card">
-        <div class="persona-avatar" style="background:#E6F1FB;color:#0C447C">RS</div>
-        <h3>Raj Sharma</h3><div class="role">Student, 20 · Shared flat</div>
-        <span class="persona-tag" style="background:#EAF3DE;color:#3B6D11">Easy tracking</span>
-        <span class="persona-tag" style="background:#E6F1FB;color:#0C447C">Expense split</span>
-        <span class="persona-tag" style="background:#FAEEDA;color:#633806">Simpler way</span>
+  <section class="hero">
+    <div class="hero-badge">✨ Smart Inhouse Grocery · Zero Waste ✨</div>
+    <h1>Stop wasting groceries.<br><span>Start syncing</span> your stock.</h1>
+    <p>Stock Sync helps households, shared flats, and families track groceries in real time — reduce waste, split
+      expenses fairly, and never run out of essentials.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="scrollToSection('app')">Launch Demo →</button>
+      <button class="btn-outline" onclick="scrollToSection('features')">Explore features</button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">3x</div>
+        <div class="stat-label">Less food wasted</div>
       </div>
-      <div class="persona-card">
-        <div class="persona-avatar" style="background:#EAF3DE;color:#3B6D11">GV</div>
-        <h3>Gaurav Verma</h3><div class="role">Software Dev, 27 · Shared apartment</div>
-        <span class="persona-tag" style="background:#EAF3DE;color:#3B6D11">Dashboard</span>
-        <span class="persona-tag" style="background:#E6F1FB;color:#0C447C">Quick access</span>
-        <span class="persona-tag" style="background:#FAEEDA;color:#633806">Efficiency</span>
+      <div class="stat">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Expense clarity</div>
       </div>
-      <div class="persona-card">
-        <div class="persona-avatar" style="background:#FBEAF0;color:#72243E">PS</div>
-        <h3>Priya Singh</h3><div class="role">Homemaker, 36 · Family household</div>
-        <span class="persona-tag" style="background:#EAF3DE;color:#3B6D11">Organization</span>
-        <span class="persona-tag" style="background:#FBEAF0;color:#72243E">Reduce waste</span>
-        <span class="persona-tag" style="background:#FAEEDA;color:#633806">Simplicity</span>
+      <div class="stat">
+        <div class="stat-num">📱 Real-time</div>
+        <div class="stat-label">Shared sync</div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- APP PROTOTYPE -->
-<section class="app-section" id="app">
-  <div class="section-inner">
-    <div class="section-label">Live Demo</div>
-    <h2 class="section-title">Try Stock Sync</h2>
-    <p class="section-sub" style="margin-bottom:1.5rem">A working prototype — add items, track expenses, and see alerts.</p>
-    <div class="app-tabs">
-      <button class="tab-btn active" onclick="showTab('inventory', this)">Inventory</button>
-      <button class="tab-btn" onclick="showTab('expenses', this)">Expenses</button>
-      <button class="tab-btn" onclick="showTab('alerts', this)">Alerts</button>
-    </div>
-
-    <!-- INVENTORY TAB -->
-    <div id="tab-inventory">
-      <div class="add-form">
-        <div class="form-label">Add item</div>
-        <div class="form-row">
-          <input id="item-name" type="text" placeholder="Item name (e.g. Milk)" />
-          <input id="item-qty" type="number" placeholder="Qty" min="1" value="1" style="max-width:80px" />
-          <select id="item-cat">
-            <option>Dairy</option><option>Vegetables</option><option>Grains</option><option>Snacks</option><option>Other</option>
-          </select>
-          <select id="item-unit">
-            <option value="kg">kilograms</option><option value="g">grams</option><option value="l">litre</option>
-            <option value="ml">ml</option><option value="pack">packs</option><option value="pcs">pieces</option>
-          </select>
-          <select id="item-status">
-            <option value="fresh">Fresh</option>
-            <option value="expiring">Expiring soon</option>
-            <option value="low">Low stock</option>
-          </select>
-          <input id="item-date" type="date" title="Date of Purchase" style="min-width:140px" />
-          <button class="btn-primary" onclick="addItem()">Add</button>
+  <section class="section" id="features">
+    <div class="section-inner">
+      <div class="section-label">⚡ Superpowers</div>
+      <h2 class="section-title">Designed to make grocery management delightful</h2>
+      <p class="section-sub">Smart alerts, interactive dashboards, and real-time expense insights — everything your
+        household needs.</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📦</div>
+          <h3>Shared inventory</h3>
+          <p>Real-time updates across all members. Add or remove, everyone sees instantly.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔔</div>
+          <h3>Smart expiry radar</h3>
+          <p>🍃 Color-coded alerts & restock suggestions — never miss a spoil date.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💸</div>
+          <h3>Fair expense split</h3>
+          <p>Auto-calculates per-person share, visualize category spending with bar/pie charts.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Spending insights</h3>
+          <p>Dynamic charts (bar + pie) — track where money flows, weekly vs monthly trends.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🏷️</div>
+          <h3>Smart categories</h3>
+          <p>Dairy, veggies, grains, snacks — filter & organize like a pro.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔄</div>
+          <h3>Live editing</h3>
+          <p>Edit items inline, change status instantly — frictionless UX.</p>
         </div>
       </div>
-      <div style="overflow-x:auto">
-        <table class="inventory-table">
-          <thead>
-            <tr>
-              <th>Item</th><th>Qty</th><th>Category</th><th>Unit</th><th>Status</th><th>Date of Purchase</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="inventory-body"></tbody>
-        </table>
-      </div>
     </div>
+  </section>
 
-    <!-- EXPENSES TAB -->
-    <div id="tab-expenses" style="display:none">
-      <div class="summary-cards">
-        <div class="summary-card"><div class="s-label">Total spent</div><div class="s-val" id="total-spent">₹0</div></div>
-        <div class="summary-card"><div class="s-label">Per person</div><div class="s-val" id="per-person">₹0</div></div>
-        <div class="summary-card"><div class="s-label">This week</div><div class="s-val">₹1,240</div></div>
-      </div>
-      <div class="add-form">
-        <div class="form-label">Log expense</div>
-        <div class="form-row">
-          <input id="exp-name" type="text" placeholder="Item / description" />
-          <input id="exp-amount" type="number" placeholder="Amount (₹)" min="1" />
-          <select id="exp-cat">
-            <option value="Dairy">Dairy</option>
-            <option value="Vegetables">Vegetables</option>
-            <option value="Grains">Grains</option>
-            <option value="Snacks">Snacks</option>
-            <option value="Other">Other</option>
-          </select>
-          <button class="btn-primary" onclick="addExpense()">Add</button>
+  <section class="section" id="personas" style="background: var(--bg-primary)">
+    <div class="section-inner">
+      <div class="section-label">👥 Built for real people</div>
+      <h2 class="section-title">Trusted by modern households</h2>
+      <p class="section-sub">From students to homemakers, Stock Sync adapts to your lifestyle.</p>
+      <div class="personas-grid">
+        <div class="persona-card">
+          <div class="persona-avatar" style="background:#E6F1FB;color:#0C447C">RS</div>
+          <h3>Raj Sharma</h3>
+          <div class="role">Student, 20 · Shared flat</div><span class="status-badge" style="background:#EAF3DE">🔁
+            Auto-split</span>
+        </div>
+        <div class="persona-card">
+          <div class="persona-avatar" style="background:#EAF3DE;color:#3B6D11">GV</div>
+          <h3>Gaurav Verma</h3>
+          <div class="role">Dev, 27 · Shared apartment</div><span class="status-badge" style="background:#E6F1FB">📈
+            Analytics</span>
+        </div>
+        <div class="persona-card">
+          <div class="persona-avatar" style="background:#FBEAF0;color:#72243E">PS</div>
+          <h3>Priya Singh</h3>
+          <div class="role">Homemaker, 36 · Family</div><span class="status-badge" style="background:#FAEEDA">♻️ Reduce
+            waste</span>
         </div>
       </div>
-      <div class="expense-list" id="expense-list"></div>
+    </div>
+  </section>
 
-      <!-- CATEGORY CHART -->
-      <div class="chart-section">
-        <div class="chart-header">
-          <div class="chart-title">Spending by Category</div>
-          <div class="chart-toggle">
-            <button class="chart-toggle-btn active" id="btn-bar" onclick="switchChart('bar')">Bar</button>
-            <button class="chart-toggle-btn" id="btn-pie" onclick="switchChart('pie')">Pie</button>
+  <section class="app-section" id="app">
+    <div class="section-inner">
+      <div class="section-label">🧪 Live Prototype</div>
+      <h2 class="section-title">Try Stock Sync now</h2>
+      <p class="section-sub">Add groceries, log expenses, see alerts and beautiful spending charts in action.</p>
+      <div class="app-tabs">
+        <button class="tab-btn active" onclick="showTab('inventory', this)">🥫 Inventory</button>
+        <button class="tab-btn" onclick="showTab('expenses', this)">💰 Expenses & Charts</button>
+        <button class="tab-btn" onclick="showTab('alerts', this)">⚠️ Smart Alerts</button>
+      </div>
+
+      <div id="tab-inventory">
+        <div class="add-form">
+          <div class="form-label">➕ Add new grocery item</div>
+          <div class="form-row">
+            <input id="item-name" type="text" placeholder="e.g., Spinach, Milk" />
+            <input id="item-qty" type="number" placeholder="Qty" value="1" style="max-width:90px" />
+            <select id="item-cat">
+              <option>Dairy</option>
+              <option>Vegetables</option>
+              <option>Grains</option>
+              <option>Snacks</option>
+              <option>Other</option>
+            </select>
+            <select id="item-unit">
+              <option value="kg">kg</option>
+              <option value="g">g</option>
+              <option value="l">L</option>
+              <option value="pack">packs</option>
+              <option value="pcs">pcs</option>
+            </select>
+            <select id="item-status">
+              <option value="fresh">Fresh ✅</option>
+              <option value="expiring">Expiring ⚠️</option>
+              <option value="low">Low stock 🚨</option>
+            </select>
+            <input id="item-date" type="date" style="min-width:130px" />
+            <button class="btn-primary" onclick="addItem()">✔️ Add item</button>
           </div>
         </div>
-        <div class="chart-container" id="chart-container"></div>
+        <div style="overflow-x:auto; border-radius: 20px;">
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Category</th>
+                <th>Unit</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-expenses" style="display:none">
+        <div class="summary-cards">
+          <div class="summary-card">
+            <div class="s-label">💰 Total spent</div>
+            <div class="s-val" id="total-spent">₹0</div>
+          </div>
+          <div class="summary-card">
+            <div class="s-label">👥 Avg per person</div>
+            <div class="s-val" id="per-person">₹0</div>
+          </div>
+          <div class="summary-card">
+            <div class="s-label">📅 This month (est.)</div>
+            <div class="s-val" id="month-est">₹1,640</div>
+          </div>
+        </div>
+        <div class="add-form">
+          <div class="form-label">📝 Log an expense</div>
+          <div class="form-row"><input id="exp-name" placeholder="Item description" /><input id="exp-amount"
+              type="number" placeholder="Amount ₹" /><select id="exp-cat">
+              <option value="Dairy">🥛 Dairy</option>
+              <option value="Vegetables">🥬 Vegetables</option>
+              <option value="Grains">🌾 Grains</option>
+              <option value="Snacks">🍿 Snacks</option>
+              <option value="Other">📦 Other</option>
+            </select><button class="btn-primary" onclick="addExpense()">+ Add expense</button></div>
+        </div>
+        <div class="expense-list" id="expense-list"></div>
+        <div class="chart-section">
+          <div class="chart-header">
+            <div class="chart-title">📊 Spending by category</div>
+            <div class="chart-toggle"><button class="chart-toggle-btn active" id="btn-bar"
+                onclick="switchChart('bar')">📊 Bar chart</button><button class="chart-toggle-btn" id="btn-pie"
+                onclick="switchChart('pie')">🥧 Pie chart</button></div>
+          </div>
+          <div class="chart-container" id="chart-container"></div>
+        </div>
+      </div>
+
+      <div id="tab-alerts" style="display:none">
+        <div class="alert-list" id="alert-list"></div>
       </div>
     </div>
+  </section>
+  <footer>
+    <p><strong>Stock Sync</strong> — Smart Inhouse Grocery Management</p>
+    <p>Team Gigabytes · Gaurav Tripathi · Aditya Chetlangia · Saneha Shaw · Aditya Raj · Heritage Institute of
+      Technology, Kolkata 2026</p>
+  </footer>
 
-    <!-- ALERTS TAB -->
-    <div id="tab-alerts" style="display:none">
-      <div class="alert-list" id="alert-list"></div>
-    </div>
-  </div>
-</section>
+  <script>
+    function scrollToSection(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
+    function setDefaultDate() { document.getElementById('item-date').value = new Date().toISOString().split('T')[0]; }
+    let inventory = [{ id: 1, name: 'Milk', qty: 2, unit: 'pack', cat: 'Dairy', status: 'expiring', date: '2026-04-17' }, { id: 2, name: 'Rice', qty: 5, unit: 'kg', cat: 'Grains', status: 'fresh', date: '2026-04-15' }, { id: 3, name: 'Tomatoes', qty: 500, unit: 'g', cat: 'Vegetables', status: 'low', date: '2026-04-18' }, { id: 4, name: 'Bread', qty: 1, unit: 'pack', cat: 'Other', status: 'fresh', date: '2026-04-19' }];
+    let nextId = 5, editingId = null;
+    let expenses = [{ id: 1, name: 'Weekly groceries', amount: 840, member: 'Raj', cat: 'Grains' }, { id: 2, name: 'Milk & bread', amount: 120, member: 'Gaurav', cat: 'Dairy' }, { id: 3, name: 'Tomatoes & onions', amount: 200, member: 'Raj', cat: 'Vegetables' }, { id: 4, name: 'Chips & biscuits', amount: 180, member: 'You', cat: 'Snacks' }];
+    let nextExpId = 5, currentChart = 'bar';
+    const CAT_COLORS = { 'Dairy': '#378ADD', 'Vegetables': '#1D9E75', 'Grains': '#EF9F27', 'Snacks': '#C95CB4', 'Other': '#7B8FA1' };
 
-<!-- FOOTER -->
-<footer>
-  <p><strong>Stock Sync</strong> — Smart Inhouse Grocery Inventory Management</p>
-  <p>Team 7 – Gigabytes &nbsp;·&nbsp; Gaurav Tripathi &nbsp;·&nbsp; Aditya Chetlangia &nbsp;·&nbsp; Saneha Shaw &nbsp;·&nbsp; Aditya Raj</p>
-  <p>Heritage Institute of Technology, Kolkata &nbsp;·&nbsp; 2026</p>
-</footer>
-
-<script>
-  function scrollToSection(id) {
-    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-  }
-
-  function formatDate(dateStr) {
-    if (!dateStr) return '—';
-    const [y, m, d] = dateStr.split('-');
-    return `${d}/${m}/${y}`;
-  }
-
-  function setDefaultDate() {
-    document.getElementById('item-date').value = new Date().toISOString().split('T')[0];
-  }
-
-  /* ── INVENTORY ── */
-  let inventory = [
-    { id: 1, name: 'Milk',     qty: 2,   unit: 'pack', cat: 'Dairy',      status: 'expiring', date: '2026-04-17' },
-    { id: 2, name: 'Rice',     qty: 5,   unit: 'kg',   cat: 'Grains',     status: 'fresh',    date: '2026-04-15' },
-    { id: 3, name: 'Tomatoes', qty: 500, unit: 'g',    cat: 'Vegetables', status: 'low',      date: '2026-04-18' },
-    { id: 4, name: 'Bread',    qty: 1,   unit: 'pack', cat: 'Other',      status: 'fresh',    date: '2026-04-19' },
-  ];
-  let nextId = 5;
-  let editingId = null;
-
-  function renderInventory() {
-    const tbody = document.getElementById('inventory-body');
-    if (inventory.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#6b6b6b;padding:2rem">No items yet. Add one above.</td></tr>';
-      return;
+    function renderInventory() {
+      const tbody = document.getElementById('inventory-body');
+      if (!inventory.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem">✨ No items yet. Add your first grocery ✨</td></tr>'; return; }
+      tbody.innerHTML = inventory.map(item => editingId === item.id ? `<tr class="edit-row"><td><input class="inline-input" id="e-name" value="${item.name}" /></td><td><input id="e-qty" type="number" value="${item.qty}" style="width:70px" /></td><td><select id="e-cat">${['Dairy', 'Vegetables', 'Grains', 'Snacks', 'Other'].map(c => `<option${c === item.cat ? ' selected' : ''}>${c}</option>`).join('')}</select></td><td><select id="e-unit">${[['kg', 'kg'], ['g', 'g'], ['l', 'L'], ['pack', 'packs'], ['pcs', 'pcs']].map(([v, l]) => `<option value="${v}"${v === item.unit ? ' selected' : ''}>${l}</option>`).join('')}</select></td><td><select id="e-status"><option value="fresh"${item.status === 'fresh' ? ' selected' : ''}>Fresh ✅</option><option value="expiring"${item.status === 'expiring' ? ' selected' : ''}>Expiring ⚠️</option><option value="low"${item.status === 'low' ? ' selected' : ''}>Low 🚨</option></select></td><td><input id="e-date" type="date" value="${item.date || ''}" /></td><td><button class="btn-save" style="background:#1D9E75;color:white;border:none;padding:5px 12px;border-radius:40px;" onclick="saveEdit(${item.id})">Save</button> <button class="btn-cancel" onclick="cancelEdit()">Cancel</button></td></tr>` : `<tr><td style="font-weight:500">${item.name}</td><td>${item.qty}</td><td>${item.cat}</td><td>${item.unit}</td><td><span class="status-badge status-${item.status}">${item.status === 'fresh' ? 'Fresh ✅' : item.status === 'expiring' ? 'Expiring ⚠️' : 'Low stock 🚨'}</span></td><td>${item.date ? item.date.split('-').reverse().join('/') : '—'}</td><td><button class="action-btn edit" onclick="startEdit(${item.id})" style="background:none;border:none;color:#1D9E75;cursor:pointer;">✏️ Edit</button> <button onclick="removeItem(${item.id})" style="background:none;border:none;color:#E24B4A;cursor:pointer;">🗑️ Remove</button></td></tr>`).join('');
     }
-    tbody.innerHTML = inventory.map(item => {
-      if (editingId === item.id) {
-        return `
-          <tr class="edit-row">
-            <td><input class="inline-input" id="e-name" value="${item.name}" /></td>
-            <td><input class="inline-input" id="e-qty" type="number" value="${item.qty}" style="width:60px" /></td>
-            <td>
-              <select class="inline-select" id="e-cat">
-                ${['Dairy','Vegetables','Grains','Snacks','Other'].map(c =>
-                  `<option${c === item.cat ? ' selected' : ''}>${c}</option>`).join('')}
-              </select>
-            </td>
-            <td>
-              <select class="inline-select" id="e-unit">
-                ${[['kg','kilograms'],['g','grams'],['l','litre'],['ml','ml'],['pack','packs'],['pcs','pieces']].map(([v,l]) =>
-                  `<option value="${v}"${v === item.unit ? ' selected' : ''}>${l}</option>`).join('')}
-              </select>
-            </td>
-            <td>
-              <select class="inline-select" id="e-status">
-                <option value="fresh"${item.status==='fresh'?' selected':''}>Fresh</option>
-                <option value="expiring"${item.status==='expiring'?' selected':''}>Expiring soon</option>
-                <option value="low"${item.status==='low'?' selected':''}>Low stock</option>
-              </select>
-            </td>
-            <td><input class="inline-input" id="e-date" type="date" value="${item.date || ''}" /></td>
-            <td style="display:flex;gap:6px;padding-top:10px">
-              <button class="btn-save" onclick="saveEdit(${item.id})">Save</button>
-              <button class="btn-cancel" onclick="cancelEdit()">Cancel</button>
-            </td>
-          </tr>`;
-      }
-      return `
-        <tr>
-          <td style="font-weight:500">${item.name}</td>
-          <td>${item.qty}</td>
-          <td style="color:#6b6b6b;font-size:12px">${item.cat}</td>
-          <td>${item.unit}</td>
-          <td><span class="status-badge status-${item.status}">
-            ${item.status === 'fresh' ? 'Fresh' : item.status === 'expiring' ? 'Expiring soon' : 'Low stock'}
-          </span></td>
-          <td style="color:#6b6b6b;font-size:12px">${formatDate(item.date)}</td>
-          <td style="display:flex;gap:4px">
-            <button class="action-btn edit" onclick="startEdit(${item.id})">✏️ Edit</button>
-            <button class="action-btn" onclick="removeItem(${item.id})">Remove</button>
-          </td>
-        </tr>`;
-    }).join('');
-  }
-
-  function startEdit(id) { editingId = id; renderInventory(); }
-  function cancelEdit()  { editingId = null; renderInventory(); }
-
-  function saveEdit(id) {
-    const name   = document.getElementById('e-name').value.trim();
-    const qty    = parseInt(document.getElementById('e-qty').value) || 1;
-    const cat    = document.getElementById('e-cat').value;
-    const unit   = document.getElementById('e-unit').value;
-    const status = document.getElementById('e-status').value;
-    const date   = document.getElementById('e-date').value;
-    if (!name) { alert('Item name cannot be empty.'); return; }
-    inventory = inventory.map(i => i.id === id ? { ...i, name, qty, cat, unit, status, date } : i);
-    editingId = null;
-    renderInventory();
-    renderAlerts();
-  }
-
-  function addItem() {
-    const name   = document.getElementById('item-name').value.trim();
-    const qty    = parseInt(document.getElementById('item-qty').value) || 1;
-    const unit   = document.getElementById('item-unit').value;
-    const cat    = document.getElementById('item-cat').value;
-    const status = document.getElementById('item-status').value;
-    const date   = document.getElementById('item-date').value;
-    if (!name) { alert('Please enter an item name.'); return; }
-    inventory.push({ id: nextId++, name, qty, unit, cat, status, date });
-    document.getElementById('item-name').value = '';
-    document.getElementById('item-qty').value  = '1';
-    setDefaultDate();
-    renderInventory();
-    renderAlerts();
-  }
-
-  function removeItem(id) {
-    inventory = inventory.filter(i => i.id !== id);
-    if (editingId === id) editingId = null;
-    renderInventory();
-    renderAlerts();
-  }
-
-  /* ── EXPENSES ── */
-  let expenses = [
-    { id: 1, name: 'Weekly groceries', amount: 840, member: 'Raj',    cat: 'Grains'     },
-    { id: 2, name: 'Milk & bread',     amount: 120, member: 'Gaurav', cat: 'Dairy'      },
-    { id: 3, name: 'Tomatoes & onions',amount: 200, member: 'Raj',    cat: 'Vegetables' },
-    { id: 4, name: 'Chips & biscuits', amount: 180, member: 'You',    cat: 'Snacks'     },
-  ];
-  let nextExpId = 5;
-  let currentChart = 'bar';
-
-  /* Category color palette — consistent with app theme */
-  const CAT_COLORS = {
-    'Dairy':      '#378ADD',
-    'Vegetables': '#1D9E75',
-    'Grains':     '#EF9F27',
-    'Snacks':     '#C95CB4',
-    'Other':      '#7B8FA1',
-  };
-
-  function getCategoryTotals() {
-    const totals = {};
-    expenses.forEach(e => {
-      const c = e.cat || 'Other';
-      totals[c] = (totals[c] || 0) + e.amount;
-    });
-    return totals;
-  }
-
-  function renderBarChart(totals) {
-    const entries = Object.entries(totals);
-    if (entries.length === 0) {
-      return `<div class="chart-empty">No expenses logged yet. Add an expense above to see the chart.</div>`;
-    }
-    const max = Math.max(...entries.map(([,v]) => v));
-    const step = Math.ceil(max / 4 / 50) * 50 || 100;
-    const yMax = step * 4;
-
-    const gridLines = [1, 0.75, 0.5, 0.25, 0].map(f =>
-      `<div class="bar-grid-line" style="opacity:${f===0?0:1}"></div>`
-    ).join('');
-
-    const bars = entries.map(([cat, amt]) => {
-      const pct = (amt / yMax) * 100;
-      const color = CAT_COLORS[cat] || '#7B8FA1';
-      return `
-        <div class="bar-group">
-          <div class="bar-wrap">
-            <div class="bar" style="height:${Math.max(pct,2)}%;background:${color}">
-              <div class="bar-tooltip">₹${amt.toLocaleString('en-IN')}</div>
-            </div>
-          </div>
-          <div class="bar-label">${cat}</div>
-          <div class="bar-amount" style="color:${color}">₹${amt >= 1000 ? (amt/1000).toFixed(1)+'k' : amt}</div>
-        </div>`;
-    }).join('');
-
-    const yLabels = [yMax, yMax*0.75, yMax*0.5, yMax*0.25, 0].map(v =>
-      `<span>₹${v >= 1000 ? (v/1000).toFixed(0)+'k' : v}</span>`
-    ).join('');
-
-    return `
-      <div style="position:relative;padding-left:36px">
-        <div class="bar-y-labels">${yLabels}</div>
-        <div style="position:relative">
-          <div class="bar-grid">${gridLines}</div>
-          <div class="bar-chart">${bars}</div>
-        </div>
-      </div>`;
-  }
-
-  function renderPieChart(totals) {
-    const entries = Object.entries(totals);
-    if (entries.length === 0) {
-      return `<div class="chart-empty">No expenses logged yet. Add an expense above to see the chart.</div>`;
-    }
-    const total = entries.reduce((s, [,v]) => s + v, 0);
-    const size = 160;
-    const cx = size / 2, cy = size / 2, r = size / 2 - 8;
-
-    let startAngle = -Math.PI / 2;
-    const slices = entries.map(([cat, amt]) => {
-      const angle = (amt / total) * 2 * Math.PI;
-      const endAngle = startAngle + angle;
-      const x1 = cx + r * Math.cos(startAngle);
-      const y1 = cy + r * Math.sin(startAngle);
-      const x2 = cx + r * Math.cos(endAngle);
-      const y2 = cy + r * Math.sin(endAngle);
-      const largeArc = angle > Math.PI ? 1 : 0;
-      const path = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z`;
-      const color = CAT_COLORS[cat] || '#7B8FA1';
-      const pct = Math.round((amt / total) * 100);
-      const result = { cat, amt, color, path, pct };
-      startAngle = endAngle;
-      return result;
-    });
-
-    const svgSlices = slices.map(s =>
-      `<path d="${s.path}" fill="${s.color}" stroke="#fff" stroke-width="2">
-        <title>${s.cat}: ₹${s.amt.toLocaleString('en-IN')} (${s.pct}%)</title>
-      </path>`
-    ).join('');
-
-    const legend = slices.map(s => `
-      <div class="pie-legend-item">
-        <div class="pie-legend-dot" style="background:${s.color}"></div>
-        <span class="pie-legend-label">${s.cat}</span>
-        <span class="pie-legend-amount">₹${s.amt.toLocaleString('en-IN')}</span>
-        <span class="pie-legend-pct">${s.pct}%</span>
-      </div>`).join('');
-
-    return `
-      <div class="pie-chart-wrap">
-        <div class="pie-svg-wrap">
-          <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${svgSlices}</svg>
-        </div>
-        <div class="pie-legend">${legend}</div>
-      </div>`;
-  }
-
-  function renderChart() {
-    const totals = getCategoryTotals();
-    const container = document.getElementById('chart-container');
-    if (!container) return;
-    container.innerHTML = currentChart === 'bar' ? renderBarChart(totals) : renderPieChart(totals);
-  }
-
-  function switchChart(type) {
-    currentChart = type;
-    document.getElementById('btn-bar').classList.toggle('active', type === 'bar');
-    document.getElementById('btn-pie').classList.toggle('active', type === 'pie');
-    renderChart();
-  }
-
-  function renderExpenses() {
-    const total = expenses.reduce((s, e) => s + e.amount, 0);
-    document.getElementById('total-spent').textContent = '₹' + total.toLocaleString('en-IN');
-    document.getElementById('per-person').textContent  = '₹' + Math.round(total / Math.max(nextExpId - 1, 1)).toLocaleString('en-IN');
-    const el = document.getElementById('expense-list');
-    if (expenses.length === 0) { el.innerHTML = '<p style="color:#6b6b6b;font-size:14px">No expenses logged yet.</p>'; }
-    else {
-      el.innerHTML = expenses.map(e => `
-        <div class="expense-item">
-          <div>
-            <div class="expense-name">${e.name}</div>
-            <div class="expense-meta">Paid by ${e.member} &nbsp;·&nbsp;
-              <span style="display:inline-block;padding:1px 7px;border-radius:4px;font-size:11px;background:${CAT_COLORS[e.cat] || '#ccc'}22;color:${CAT_COLORS[e.cat] || '#555'};font-weight:500">${e.cat}</span>
-            </div>
-          </div>
-          <div class="expense-amount">₹${e.amount.toLocaleString('en-IN')}</div>
-          <button onclick="removeExpense(${e.id})" style="background:none;border:none;color:#6b6b6b;cursor:pointer;font-size:13px;font-family:inherit">Remove</button>
-        </div>`).join('');
-    }
-    renderChart();
-  }
-
-  function addExpense() {
-    const name   = document.getElementById('exp-name').value.trim();
-    const amount = parseInt(document.getElementById('exp-amount').value) || 0;
-    const cat    = document.getElementById('exp-cat').value;
-    if (!name || !amount) { alert('Please enter a description and amount.'); return; }
-    expenses.push({ id: nextExpId++, name, amount, member: 'You', cat });
-    document.getElementById('exp-name').value   = '';
-    document.getElementById('exp-amount').value = '';
-    renderExpenses();
-  }
-
-  function removeExpense(id) {
-    expenses = expenses.filter(i => i.id !== id);
-    nextExpId--;
-    renderExpenses();
-  }
-
-  /* ── ALERTS ── */
-  function renderAlerts() {
-    const expiringItems = inventory.filter(i => i.status === 'expiring');
-    const lowItems      = inventory.filter(i => i.status === 'low');
-    const alerts = [
-      ...expiringItems.map(i => ({ title: `${i.name} is expiring soon`, sub: 'Use it before it goes to waste.', bg:'#FAEEDA', dot:'#EF9F27', tc:'#633806' })),
-      ...lowItems.map(i =>      ({ title: `${i.name} is running low`,   sub: `Only ${i.qty} unit(s) left. Consider restocking.`, bg:'#FCEBEB', dot:'#E24B4A', tc:'#501313' })),
-      { title: 'Shared dashboard active',        sub: 'All 3 members can view and update the inventory.', bg:'#EAF3DE', dot:'#1D9E75', tc:'#3B6D11' },
-      { title: 'Monthly spending summary ready', sub: '₹1,960 spent this month across 3 members.',        bg:'#E6F1FB', dot:'#378ADD', tc:'#0C447C' },
-    ];
-    document.getElementById('alert-list').innerHTML = alerts.map(a => `
-      <div class="alert-item" style="background:${a.bg}">
-        <div class="alert-dot" style="background:${a.dot}"></div>
-        <div><div class="alert-title" style="color:${a.tc}">${a.title}</div><div class="alert-sub">${a.sub}</div></div>
-      </div>`).join('');
-  }
-
-  /* ── TABS ── */
-  function showTab(tab, btn) {
-    ['inventory','expenses','alerts'].forEach(t => {
-      document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
-    });
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    if (tab === 'expenses') renderExpenses();
-    if (tab === 'alerts')   renderAlerts();
-  }
-
-  /* ── INIT ── */
-  setDefaultDate();
-  renderInventory();
-</script>
-</body>
-</html>
+    function startEdit(id) { editingId = id; renderInventory(); }
+    function cancelEdit() { editingId = null; renderInventory(); }
+    function saveEdit(id) { const name = document.getElementById('e-name').value.trim(); if (!name) return; const qty = parseInt(document.getElementById('e-qty').value) || 1; const cat = document.getElementById('e-cat').value; const unit = document.getElementById('e-unit').value; const status = document.getElementById('e-status').value; const date = document.getElementById('e-date').value; inventory = inventory.map(i => i.id === id ? { ...i, name, qty, cat, unit, status, date } : i); editingId = null; renderInventory(); renderAlerts(); }
+    function addItem() { const name = document.getElementById('item-name').value.trim(); if (!name) { alert("Add an item name"); return; } const qty = parseInt(document.getElementById('item-qty').value) || 1; const unit = document.getElementById('item-unit').value; const cat = document.getElementById('item-cat').value; const status = document.getElementById('item-status').value; const date = document.getElementById('item-date').value || new Date().toISOString().split('T')[0]; inventory.push({ id: nextId++, name, qty, unit, cat, status, date }); document.getElementById('item-name').value = ''; renderInventory(); renderAlerts(); }
+    function removeItem(id) { inventory = inventory.filter(i => i.id !== id); if (editingId === id) editingId = null; renderInventory(); renderAlerts(); }
+    function getCategoryTotals() { const t = {}; expenses.forEach(e => { const c = e.cat || 'Other'; t[c] = (t[c] || 0) + e.amount; }); return t; }
+    function renderBarChart(totals) { const entries = Object.entries(totals); if (!entries.length) return '<div class="chart-empty">📭 No expenses yet. Add one to see chart.</div>'; const max = Math.max(...entries.map(([, v]) => v)) || 1, yMax = Math.ceil(max / 100) * 100; const bars = entries.map(([cat, amt]) => { const pct = (amt / yMax) * 100; return `<div class="bar-group"><div class="bar-wrap"><div class="bar" style="height:${Math.max(pct, 4)}%;background:${CAT_COLORS[cat] || '#7B8FA1'};border-radius:8px 8px 4px 4px;"><div class="bar-tooltip" style="display:none;position:absolute;background:#1a1a1a;color:white;padding:2px 8px;border-radius:20px;font-size:11px;top:-28px;">₹${amt}</div></div></div><div class="bar-label">${cat}</div><div class="bar-amount">₹${amt >= 1000 ? (amt / 1000).toFixed(1) + 'k' : amt}</div></div>`; }).join(''); return `<div style="position:relative;padding-left:30px"><div class="bar-chart">${bars}</div></div>`; }
+    function renderPieChart(totals) { const entries = Object.entries(totals); if (!entries.length) return '<div class="chart-empty">📭 No expenses yet. Add one to see pie chart.</div>'; const total = entries.reduce((s, [, v]) => s + v, 0); const size = 180, cx = size / 2, cy = size / 2, r = size / 2 - 10; let start = -Math.PI / 2; const slices = entries.map(([cat, amt]) => { const angle = (amt / total) * 2 * Math.PI; const end = start + angle; const x1 = cx + r * Math.cos(start), y1 = cy + r * Math.sin(start), x2 = cx + r * Math.cos(end), y2 = cy + r * Math.sin(end); const large = angle > Math.PI ? 1 : 0; const path = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`; const color = CAT_COLORS[cat] || '#7B8FA1'; const pct = Math.round((amt / total) * 100); start = end; return { cat, amt, color, path, pct }; }); const svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${slices.map(s => `<path
