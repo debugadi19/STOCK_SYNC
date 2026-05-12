@@ -67,6 +67,47 @@
     border-top-color: var(--green);
     animation: spin 0.8s linear infinite;
   }
+  body.dark {
+  background: #0f172a;
+  color: #f8fafc;
+  }
+  body.dark .dash-nav,
+  body.dark .dash-stat-card,
+  body.dark .add-form,
+  body.dark .table-wrap,
+  body.dark .summary-card,
+  body.dark .expense-item,
+  body.dark .alert-item,
+  body.dark .backup-row {
+    background: #1e293b;
+    color: #f8fafc;
+    border-color: #334155;
+  }
+  body.dark input,
+  body.dark select,
+  body.dark table,
+  body.dark textarea {
+    background: #0f172a;
+    color: #f8fafc;
+    border-color: #475569;
+  }
+  body.dark th,
+  body.dark td {
+    color: #f8fafc;
+  }
+  body.dark .dash-sub,
+  body.dark .storage-bar,
+  body.dark .dash-stat-label,
+  body.dark .alert-sub {
+    color: #cbd5e1;
+  }
+  body.dark .btn-outline {
+    border-color: #64748b;
+    color: #f8fafc;
+  }
+  body.dark .empty-state {
+    color: #cbd5e1;
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
@@ -83,6 +124,14 @@
     Stock Sync
   </a>
   <div style="display:flex;align-items:center;gap:10px;">
+    <button 
+  class="btn-outline"
+  id="theme-toggle"
+  style="font-size:13px;padding:6px 14px"
+  onclick="toggleTheme()"
+>
+  🌙 Dark
+</button>
     <div class="user-pill">
       <div class="user-avatar" id="user-initial">?</div>
       <span id="dash-user-label">—</span>
@@ -256,7 +305,14 @@
   // device before any Firestore call is made.
   // We still read localStorage for display only (email).
   const user = localStorage.getItem("user") || "—";
-
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark");
+    window.addEventListener("DOMContentLoaded", () => {
+      const btn = document.getElementById("theme-toggle");
+      if (btn) btn.textContent = "☀️ Light";
+    });
+  }
   document.getElementById('dash-user-label').textContent = user;
   document.getElementById('user-initial').textContent    = (user || '?')[0].toUpperCase();
 
@@ -636,7 +692,18 @@
     c.appendChild(t);
     setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 2800);
   }
-
+  //toggle theme
+  window.toggleTheme = function () {
+    document.body.classList.toggle("dark");
+    const btn = document.getElementById("theme-toggle");
+    if (document.body.classList.contains("dark")) {
+      localStorage.setItem("theme", "dark");
+      btn.textContent = "☀️ Light";
+    } else {
+    localStorage.setItem("theme", "light");
+    btn.textContent = "🌙 Dark";
+    }
+  };
   // ── HELPERS ─────────────────────────────────
   function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
   function escAttr(s) { return esc(s).replace(/`/g, '&#96;'); }
