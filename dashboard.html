@@ -319,7 +319,9 @@
   const h = new Date().getHours();
   document.getElementById('dash-greeting').textContent =
     h < 12 ? 'Good morning 👋' : h < 17 ? 'Good afternoon 👋' : 'Good evening 👋';
-
+  if ("Notification" in window) {
+    Notification.requestPermission();
+  }
   // ── STATE ───────────────────────────────────
   let inventory = [];
   let expenses  = [];
@@ -419,26 +421,22 @@
   };
 
   window.editItemQty = async function (id) {
+    
     const item = inventory.find(i => i.id === id);
     if (!item) return showToast("Item not found.", "error");
-
     const input = prompt(`Enter new quantity for "${item.name}" (${item.unit})`,item.qty);
     if (input === null) return;
-
     const addQty = parseFloat(input);
     if (isNaN(addQty) || addQty <= 0) {
       return showToast("Please enter a positive quantity.", "error");
     }
-
     const newQty = Number(item.qty || 0) + addQty;
     if (newQty > 9999) {
       return showToast("Quantity seems too large. Please double-check.", "error");
     }
-
     const prev = inventory;
     const updatedItem = { ...item, qty: Number(newQty.toFixed(2)) };
     inventory = inventory.map(i => i.id === id ? updatedItem : i);
-
     try {
       await saveInventoryItem(updatedItem);
       showToast(`Updated "${item.name}" to ${updatedItem.qty} ${item.unit} ✓`);
@@ -594,6 +592,20 @@
       ...getLowStock(inventory).map(i =>     ({ type:'amber', title:`📉 ${i.name} is running low`,    sub:`Only ${i.qty} ${i.unit} remaining` })),
       ...getFreshItems(inventory).map(i =>   ({ type:'green', title:`✓ ${i.name} is fully stocked`,  sub:`${i.qty} ${i.unit} · ${i.cat}` })),
     ];
+    
+    getLowStock(inventory).forEach(i => {
+      sendNotification(
+        `📉 ${i.name} is low`,
+        `Only ${i.qty} ${i.unit} remaining`
+      );
+    });
+    getExpiringSoon(inventory).forEach(i => {
+      sendNotification(
+      `⚠️ ${i.name} expiring soon`,
+      `${i.qty} ${i.unit} left`
+      );
+    });
+    
     el.innerHTML = !alerts.length
       ? `<div class="empty-state"><div class="empty-icon">✅</div>No alerts — inventory looks great!</div>`
       : alerts.map(a => `
@@ -704,6 +716,16 @@
     btn.textContent = "🌙 Dark";
     }
   };
+  
+  function sendNotification(title, body) {
+  if (Notification.permission === "granted") {
+    new Notification(title, {
+      body: body,
+      icon: "https://cdn-icons-png.flaticon.com/512/3081/3081559.png"
+      });
+    }
+  }
+  
   // ── HELPERS ─────────────────────────────────
   function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
   function escAttr(s) { return esc(s).replace(/`/g, '&#96;'); }
