@@ -4,13 +4,6 @@
 // This serves all your HTML, CSS, and JS files
 // so you can run the project on localhost instead
 // of just opening index.html directly in the browser.
-//
-// HOW TO RUN:
-//   1. Make sure Node.js is installed (node -v to check)
-//   2. In this project folder, run:  npm install express
-//   3. Then run:                     node server.js
-//   4. Open browser at:              http://localhost:3000
-// ─────────────────────────────────────────────
 
 const express = require("express"); // import the express library
 const path    = require("path");    // built-in Node module to handle file paths
